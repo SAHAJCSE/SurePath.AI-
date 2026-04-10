@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { BarChart2, ShieldCheck, ArrowRight, Building2 } from 'lucide-react';
 
-const API_BASE = `http://${window.location.hostname || 'localhost'}:5050`;
+import { API_BASE } from '../config';
 
 export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
   const [fileName, setFileName] = useState<string>('');

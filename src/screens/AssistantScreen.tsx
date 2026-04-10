@@ -11,7 +11,7 @@ type AssistantScreenProps = {
   provider?: string;
 };
 
-const API_BASE = `http://${window.location.hostname || 'localhost'}:5050`;
+import { API_BASE } from '../config';
 const QUICK = ['Ask about accident coverage', 'Check claim eligibility', 'What documents are required?', 'Show my saved profile summary'];
 
 type SavedProfile = {
