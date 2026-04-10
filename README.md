@@ -55,7 +55,7 @@ Follow these steps to get SurePath AI running on your local machine.
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/surepath.ai.git
+git clone https://github.com/SAHAJCSE/SurePath.AI-.git
 cd surepath.ai
 ```
 
