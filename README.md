@@ -10,7 +10,7 @@
 </div>
 
 ---
-<div align="center">   <b> <a href="sure-path-ai.vercel.app"> CLICK HERE TO SEE THE APP </a></b></div>
+<div align="center">   <b> <a href="https://sure-path-ai.vercel.app/"> CLICK HERE TO SEE THE APP </a></b></div>
 
 ## 📋 Problem Statement
 
