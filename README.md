@@ -1,6 +1,5 @@
 <div align="center">
-  <img width="1200" height="auto" alt="SurePath AI Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-  
+
   # SurePath AI
   ### "Your Policy, Deciphered."
   
@@ -89,13 +88,49 @@ The application will be available at `http://localhost:3000`.
 ---
 
 ## 🤝 Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Students from Chitkara University (CSE) building SurePath AI.
 
----
+## 👥 Team
 
 <div align="center">
-  Built with ❤️ for a more transparent insurance future.
+
+<h3>Students from Chitkara University (CSE) building <b>SurePath AI</b></h3>
+
+</div>
+
+<br/>
+
+<div style="font-size:18px; line-height:1.8;">
+
+<ul>
+  <li><b>🚀 Sahaj (Lead & Full Stack)</b><br/>
+  Architecture, frontend, API integration, chatbot flow</li>
+
+  <br/>
+
+  <li><b>🎨 Vrinda (Frontend & UI/UX)</b><br/>
+  Design, responsive UI, user experience</li>
+
+  <br/>
+
+  <li><b>⚙️ Rajeev Ranjan (Backend)</b><br/>
+  APIs, server logic, file handling</li>
+
+  <br/>
+
+  <li><b>🤖 Miljot Singh (AI & Testing)</b><br/>
+  Gemini integration, prompt engineering, testing</li>
+</ul>
+
+</div>
+
+<hr/>
+
+<div align="center" style="font-size:16px;">
+  Built with ❤️ to make insurance simple and transparent.
+</div>
+
+<div align="center">
+  Built with ❤️ to make insurance simple, transparent, and accessible for everyone.
 </div>
