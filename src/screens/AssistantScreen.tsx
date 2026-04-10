@@ -48,9 +48,7 @@ function localAssistantReply(question: string, hasPolicy: boolean, loggedIn: boo
     const u = savedProfile.form;
     return `Saved profile: ${u.firstName} ${u.lastName}, ${u.gender}, DOB ${u.dob}, Mobile ${u.countryCode} ${u.mobile}, Email ${u.email}, PIN ${u.pinCode}.`;
   }
-  if (!hasPolicy) {
-    return 'Please upload your policy first from Home. For demo: accident and hospitalization are usually covered, while alcohol-related incidents are often excluded.';
-  }
+
   if (q.includes('accident')) {
     return 'Accident coverage is typically active, but exclusions like alcohol/drug influence can reject claims. Keep FIR + hospital records ready.';
   }
@@ -78,10 +76,8 @@ export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
     {
       role: 'assistant',
       text: loggedIn
-        ? (policyId
-          ? `Hello ${savedProfile?.form?.firstName || ''}! I can answer questions using your saved profile and uploaded policy (${policyName || 'policy document'}).`
-          : `Hello ${savedProfile?.form?.firstName || ''}! I can use your saved profile. Upload a policy for policy-specific answers.`)
-        : 'Hello! Please save your profile first, then I can answer with your saved details.',
+        ? `Hello ${savedProfile?.form?.firstName || ''}! I can help you with questions about coverage, eligibility, and the claims process.`
+        : 'Hello! I can help you with insurance questions. Please save your profile for personalized answers.',
     },
   ]);
   const [input, setInput] = useState('');
@@ -126,7 +122,7 @@ export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
         </div>
         <h2 className="text-3xl font-extrabold mt-3">Policy Help Chat</h2>
         <p className="text-sm text-on-surface-variant mt-1">Continuous conversation with context awareness across follow-up questions.</p>
-        {!policyId && <p className="text-xs text-error mt-2">No policy uploaded yet. Go to Home and upload PDF/TXT for policy-based answers.</p>}
+
       </section>
 
       <section className="rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4">
