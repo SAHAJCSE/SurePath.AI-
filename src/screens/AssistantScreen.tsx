@@ -38,33 +38,141 @@ function getSavedProfile(): SavedProfile | null {
   }
 }
 
-function localAssistantReply(question: string, hasPolicy: boolean, loggedIn: boolean, savedProfile: SavedProfile | null) {
+function localAssistantReply(question: string, loggedIn: boolean, savedProfile: SavedProfile | null) {
   const q = question.toLowerCase();
+  const userName = savedProfile?.form?.firstName || 'User';
+
   if (!loggedIn) {
-    return 'Please complete your profile first. Once logged in profile is available, I can answer using your saved details and policy.';
-  }
-  if (q.includes('saved profile') || q.includes('my profile') || q.includes('my details')) {
-    if (!savedProfile?.form) return 'No saved profile data found yet. Please save your profile once.';
-    const u = savedProfile.form;
-    return `Saved profile: ${u.firstName} ${u.lastName}, ${u.gender}, DOB ${u.dob}, Mobile ${u.countryCode} ${u.mobile}, Email ${u.email}, PIN ${u.pinCode}.`;
+    return `✅ Hello! I am SurePath AI, your intelligent insurance assistant.
+
+📌 Quick Note:
+Please save your profile first. Once you do, I can provide personalized answers based on your details.
+
+👉 Next Steps:
+- Go to the Profile tab to save your details.`;
   }
 
+  // Profile Specific
+  if (q.includes('saved profile') || q.includes('my profile') || q.includes('my details')) {
+    const u = savedProfile?.form;
+    if (!u) return '✅ I couldn\'t find your profile details. Please save them in the Profile tab first.';
+    
+    return `✅ Here are your profile details, ${userName}:
+
+📌 Key Details:
+- Name: ${u.firstName} ${u.lastName}
+- Gender: ${u.gender}
+- DOB: ${u.dob}
+- Contact: ${u.countryCode} ${u.mobile}
+- Email: ${u.email}
+
+⚠️ ध्यान देने वाली बात / Important:
+- Ensure your contact details are updated for seamless claim processing.
+
+👉 Next Steps:
+- Check your accident coverage?
+- See your claim eligibility?`;
+  }
+
+  // Accident Coverage
   if (q.includes('accident')) {
-    return 'Accident coverage is typically active, but exclusions like alcohol/drug influence can reject claims. Keep FIR + hospital records ready.';
+    return `✅ Yes ${userName}, your policy generally includes comprehensive accident coverage.
+
+📌 What is Covered:
+- Accidental death benefit
+- Permanent total/partial disability
+- Emergency medical expenses related to the accident
+
+⚠️ ध्यान देने वाली बात / Important:
+- Accidents caused by intoxication (alcohol/drugs) are NOT covered.
+- FIR is usually mandatory for accidental claims.
+
+👉 Next Steps:
+- Check your exact coverage amount?
+- See required documents for accident claims?`;
   }
+
+  // Eligibility
   if (q.includes('eligible') || q.includes('eligibility')) {
-    return 'Eligibility usually needs: active policy, paid premium, waiting period completion, and no exclusion trigger.';
+    return `✅ Based on standard policy terms, here is your eligibility check:
+
+📌 Conditions:
+- Policy must be active (premium paid)
+- Waiting period (usually 30 days) must be completed
+- No "pre-existing condition" exclusion triggered
+
+⚠️ ध्यान देने वाली बात / Important:
+- Eligibility is subject to the specific terms of the provider you selected.
+
+👉 Next Steps:
+- List required documents?
+- See how to file a claim?`;
   }
+
+  // Documents
   if (q.includes('document') || q.includes('docs')) {
-    return 'Common documents: policy number, ID proof, claim form, medical reports, bills, and FIR for accident cases.';
+    return `✅ To process any claim, you will typically need these documents:
+
+📌 Checklist:
+- Original Policy Document/Number
+- ID Proof (Aadhar/PAN) of the policyholder
+- Medical Reports & Hospital Bills
+- Cancelled Cheque for payout
+
+⚠️ ध्यान देने वाली बात / Important:
+- Always keep digital scans of these documents ready for faster processing.
+
+👉 Next Steps:
+- Check eligibility for a claim?
+- Ask about a specific scenario (e.g., bike accident)?`;
   }
-  if (q.includes('claim') || q.includes('amount')) {
-    return 'Claim amount depends on your sum assured and clause limits. Demo estimate: accident up to ₹5 lakh, natural death around ₹3 lakh.';
+
+  // Claims
+  if (q.includes('claim') || q.includes('process')) {
+    return `✅ Filing a claim is a structured 4-step process:
+
+📌 Steps:
+1. **Intimation**: Inform the insurer within 24-48 hours.
+2. **Submission**: Upload/Submit required documents via app or portal.
+3. **Verification**: The insurer reviews the documents and medical proofs.
+4. **Settlement**: If approved, funds are transferred to your bank account.
+
+⚠️ ध्यान देने वाली बात / Important:
+- Common mistake: Delaying the intimation after an incident. Always inform within 24 hours.
+
+👉 Next Steps:
+- Need the list of required documents?
+- Check your claim eligibility?`;
   }
+
+  // Hospitalization
   if (q.includes('hospital')) {
-    return 'Hospitalization is usually covered for in-patient treatment. Cashless works in network hospitals; reimbursement works with bills.';
+    return `✅ Hospitalization is covered for in-patient treatments.
+
+📌 Key Benefits:
+- Cashless facility at network hospitals
+- Room rent and surgery charges included
+- Pre and post-hospitalization coverage
+
+⚠️ ध्यान देने वाली बात / Important:
+- For cashless care, contact the hospital insurance desk before admission or within 24 hours of emergency.
+
+👉 Next Steps:
+- Check network hospitals?
+- See required documents for admission?`;
   }
-  return 'I can help with coverage, claim process, eligibility, exclusions, and required documents. Try asking a specific scenario.';
+
+  // Default / Unclear
+  return `✅ I can certainly help you with that, ${userName}. 
+
+📌 I specialize in:
+- Explaining coverage (Accidents, Death, Hospitalization)
+- Checking Eligibility & Required Documents
+- Guiding you through the Claim Process
+
+👉 Next Steps:
+- Could you please specify your query?
+- Or try one of the quick buttons below!`;
 }
 
 export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
@@ -76,8 +184,12 @@ export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
     {
       role: 'assistant',
       text: loggedIn
-        ? `Hello ${savedProfile?.form?.firstName || ''}! I can help you with questions about coverage, eligibility, and the claims process.`
-        : 'Hello! I can help you with insurance questions. Please save your profile for personalized answers.',
+        ? `✅ Hello ${savedProfile?.form?.firstName || ''}! I am **SurePath AI**, your personal insurance guide.
+
+I can help you decipher your coverage, check eligibility, or walk you through a claim. What's on your mind today?`
+        : `✅ Hello! I am **SurePath AI**. 
+
+I help make insurance simple. Please save your profile so I can provide personalized guidance for your specific situation.`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -99,7 +211,7 @@ export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
     try {
       // WhatsApp-like typing pause before response.
       await new Promise((r) => setTimeout(r, 700));
-      const reply = localAssistantReply(text, Boolean(policyId), loggedIn, savedProfile);
+      const reply = localAssistantReply(text, loggedIn, savedProfile);
       setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
     } catch {
       setError('Something went wrong, try again.');
@@ -126,9 +238,9 @@ export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
       </section>
 
       <section className="rounded-3xl border border-outline-variant/20 bg-surface-container-low p-4">
-        <div className="h-[360px] overflow-auto space-y-3 pr-1">
+        <div className="h-[420px] overflow-auto space-y-4 pr-2 scrollbar-hide">
           {messages.map((m, idx) => (
-            <div key={idx} className={`text-sm rounded-2xl px-3 py-2 ${m.role === 'assistant' ? 'bg-surface-container-lowest text-on-surface mr-8' : 'bg-primary text-on-primary ml-8'}`}>
+            <div key={idx} className={`text-sm rounded-2xl px-4 py-3 whitespace-pre-wrap ${m.role === 'assistant' ? 'bg-surface-container-lowest text-on-surface mr-12 shadow-sm border border-outline-variant/10' : 'bg-primary text-on-primary ml-12 shadow-md'}`}>
               {m.text}
             </div>
           ))}
