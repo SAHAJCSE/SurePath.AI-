@@ -20,7 +20,10 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
         method: 'POST',
         body: form,
       });
-      if (!res.ok) throw new Error('upload_failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'upload_failed');
+      }
 
       const data = await res.json();
       const policyId = String(data?.policyId || '');
@@ -29,10 +32,13 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
       localStorage.setItem('surepath_policy_id', policyId);
       localStorage.setItem('surepath_policy_name', file.name);
       setUploadState('done');
-      setUploadMessage(`Policy uploaded successfully (${file.name})`);
-    } catch {
+      setUploadMessage(`Policy uploaded successfully! Navigating...`);
+      
+      // Auto-navigate after a brief delay so user sees success.
+      setTimeout(onStart, 1200);
+    } catch (err: any) {
       setUploadState('error');
-      setUploadMessage('Upload failed. Please try again.');
+      setUploadMessage(err.message === 'upload_failed' ? 'Upload failed. Please try again.' : `Error: ${err.message}`);
     }
   }
 

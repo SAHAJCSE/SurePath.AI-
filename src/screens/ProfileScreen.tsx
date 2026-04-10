@@ -1,10 +1,31 @@
 import { useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, User, ChevronRight, FileText, CreditCard, LogOut, Settings, Verified, Shield, History, HelpCircle, Headphones, ScanFace } from 'lucide-react';
+import { motion } from 'motion/react';
+import { ShieldCheck, User, ChevronRight, FileText, LogOut, Shield, History, HelpCircle, Headphones, ScanFace, Verified, Settings } from 'lucide-react';
 
-export const ProfileScreen = () => {
+type ProfileForm = {
+  firstName: string;
+  lastName: string;
+  gender: string;
+};
+
+function getStoredProfile() {
+  try {
+    const raw = localStorage.getItem('surepath_user_profile');
+    if (!raw) return null;
+    return JSON.parse(raw) as { form: ProfileForm; profileImage?: string };
+  } catch {
+    return null;
+  }
+}
+
+export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
   const profileInfoRef = useRef<HTMLDivElement | null>(null);
   const documentsRef = useRef<HTMLDivElement | null>(null);
+  const stored = getStoredProfile();
+  
+  const firstName = stored?.form?.firstName || 'Alexander';
+  const lastName = stored?.form?.lastName || 'Sterling';
+  const profileImage = stored?.profileImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBp9VKaMkpzqXYcAs45N1Xi0mFAuI4yxOA7AtWXwpXSSSFvrJE1gYqf1Dftiq048fgOb2ZJPPudseEszT0YsF9DhOVA3epnsPasIEAqiYLdUgO11iAB0bQCq6OZupbgxM6D6HIzhfv9t2Xtd3DiA2MD_B9UYjB0RQsEEcOJ0ITwN1US9WEBp6ag3m7_IDcWpXQwOPdyn5msYpRkckPHHL0LCZHkhXaqU4jYXgCCAW8XjKNkqVtu6CtlRU_oRiBQXit1QxqntNJvbjgz';
 
   return (
   <motion.main 
@@ -17,17 +38,20 @@ export const ProfileScreen = () => {
       <div className="relative mb-4 group">
         <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-surface-container-lowest shadow-lg">
           <img 
-            alt="Alexander Sterling" 
+            alt={firstName} 
             className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp9VKaMkpzqXYcAs45N1Xi0mFAuI4yxOA7AtWXwpXSSSFvrJE1gYqf1Dftiq048fgOb2ZJPPudseEszT0YsF9DhOVA3epnsPasIEAqiYLdUgO11iAB0bQCq6OZupbgxM6D6HIzhfv9t2Xtd3DiA2MD_B9UYjB0RQsEEcOJ0ITwN1US9WEBp6ag3m7_IDcWpXQwOPdyn5msYpRkckPHHL0LCZHkhXaqU4jYXgCCAW8XjKNkqVtu6CtlRU_oRiBQXit1QxqntNJvbjgz" 
+            src={profileImage} 
             referrerPolicy="no-referrer"
           />
         </div>
-        <button className="absolute bottom-0 right-0 bg-primary p-2 rounded-full text-on-primary shadow-md active:scale-90 transition-transform">
+        <button 
+          onClick={onEdit}
+          className="absolute bottom-0 right-0 bg-primary p-2 rounded-full text-on-primary shadow-md active:scale-90 transition-transform"
+        >
           <Settings size={14} />
         </button>
       </div>
-      <h2 className="text-2xl font-extrabold tracking-tight mb-1 text-on-surface">Alexander Sterling</h2>
+      <h2 className="text-2xl font-extrabold tracking-tight mb-1 text-on-surface">{firstName} {lastName}</h2>
       <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-bold tracking-wide uppercase">
         <Verified size={14} className="mr-1" fill="currentColor" />
         Premium Member
@@ -43,7 +67,7 @@ export const ProfileScreen = () => {
         <div key={i}>
           <button
             onClick={() => {
-              if (item.label === 'Profile Info') profileInfoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (item.label === 'Profile Info') onEdit();
               if (item.label === 'Documents') documentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
             className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors"

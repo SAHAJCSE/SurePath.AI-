@@ -119,7 +119,7 @@ export default function App() {
         )}
         {screen === 'profile' && (
           <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ProfileScreen />
+            <ProfileScreen onEdit={() => setScreen('profile_form')} />
           </motion.div>
         )}
         {screen === 'profile_form' && (
