@@ -18,11 +18,14 @@ function getStoredProfile() {
   }
 }
 
+import { FeedbackModal } from '../components/features/FeedbackModal';
+
 export const ProfileScreen = ({ onEdit, onHelp }: { onEdit: () => void, onHelp: () => void }) => {
   const profileInfoRef = useRef<HTMLDivElement | null>(null);
   const documentsRef = useRef<HTMLDivElement | null>(null);
   const [profileData, setProfileData] = useState(getStoredProfile());
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const syncProfile = () => setProfileData(getStoredProfile());
@@ -226,18 +229,38 @@ export const ProfileScreen = ({ onEdit, onHelp }: { onEdit: () => void, onHelp: 
             exit={{ height: 0 }} 
             className="overflow-hidden bg-surface-container-low"
           >
-            <div className="p-4 space-y-3 border-t border-outline-variant/10">
-              <div className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
-                <Phone size={16} className="text-primary" />
-                <span className="text-xs font-bold">+91 1800-410-SHIELD</span>
+            <div className="p-5 space-y-4 border-t border-outline-variant/10">
+              
+              <div className="space-y-2">
+                <a href="tel:+911800410SHIELD" className="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-md hover:border-primary/20 hover:text-primary transition-all group">
+                  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <Phone size={18} />
+                  </div>
+                  <div>
+                    <span className="block text-sm font-bold text-on-surface group-hover:text-primary transition-colors">+91 1800-410-SHIELD</span>
+                    <span className="block text-[10px] uppercase font-bold text-on-surface-variant/70 tracking-widest mt-0.5">Toll Free Support</span>
+                  </div>
+                </a>
+
+                <a href="mailto:support@surepath.ai" className="flex items-center gap-4 p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/10 hover:shadow-md hover:border-primary/20 hover:text-primary transition-all group">
+                  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <Mail size={18} />
+                  </div>
+                  <div>
+                    <span className="block text-sm font-bold text-on-surface group-hover:text-primary transition-colors">support@surepath.ai</span>
+                    <span className="block text-[10px] uppercase font-bold text-on-surface-variant/70 tracking-widest mt-0.5">24/7 Email Concierge</span>
+                  </div>
+                </a>
               </div>
-              <button className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-on-primary rounded-xl text-xs font-bold">
-                <MessageSquare size={16} />
-                <span>Start Live Chat</span>
-              </button>
-              <div className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
-                <Mail size={16} className="text-primary" />
-                <span className="text-xs font-bold">support@surepath.ai</span>
+
+              <div className="pt-2">
+                <button 
+                  onClick={() => setIsFeedbackOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 p-3 bg-surface-container-highest text-on-surface hover:bg-primary hover:text-on-primary rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                >
+                  <MessageSquare size={16} />
+                  Give Feedback
+                </button>
               </div>
             </div>
           </motion.div>
@@ -276,6 +299,15 @@ export const ProfileScreen = ({ onEdit, onHelp }: { onEdit: () => void, onHelp: 
     <div className="text-center px-6 py-4">
       <p className="text-[10px] text-outline tracking-widest uppercase font-bold">SurePath AI | v2.4.0</p>
     </div>
+
+    <FeedbackModal 
+      isOpen={isFeedbackOpen}
+      onClose={() => setIsFeedbackOpen(false)}
+      onSubmit={(rating, message) => {
+        console.log('Feedback submitted:', { rating, message });
+        // Optional backend sync here
+      }}
+    />
   </motion.main>
   );
 };
