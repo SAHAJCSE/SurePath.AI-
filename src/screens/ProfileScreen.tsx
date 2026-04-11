@@ -18,7 +18,7 @@ function getStoredProfile() {
   }
 }
 
-export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
+export const ProfileScreen = ({ onEdit, onHelp }: { onEdit: () => void, onHelp: () => void }) => {
   const profileInfoRef = useRef<HTMLDivElement | null>(null);
   const documentsRef = useRef<HTMLDivElement | null>(null);
   const stored = getStoredProfile();
@@ -178,7 +178,7 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
 
     <div className="mx-4 mb-6 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm">
       <button 
-        onClick={() => setExpanded(expanded === 'help' ? null : 'help')}
+        onClick={onHelp}
         className="w-full flex items-center justify-between px-4 py-4 active:bg-surface-container-low transition-colors"
       >
         <div className="flex items-center gap-3">
@@ -187,34 +187,11 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
           </div>
           <span className="font-medium">Help Center</span>
         </div>
-        <ChevronRight size={20} className={`text-outline-variant transition-transform ${expanded === 'help' ? 'rotate-90' : ''}`} />
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">AI BOT</span>
+          <ChevronRight size={20} className="text-outline-variant" />
+        </div>
       </button>
-
-      <AnimatePresence>
-        {expanded === 'help' && (
-          <motion.div 
-            initial={{ height: 0 }} 
-            animate={{ height: 'auto' }} 
-            exit={{ height: 0 }} 
-            className="overflow-hidden bg-surface-container-low"
-          >
-            <div className="p-4 space-y-2 border-t border-outline-variant/10">
-              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
-                <span>How to file a claim?</span>
-                <ExternalLink size={14} className="text-outline-variant" />
-              </a>
-              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
-                <span>Coverage Guide</span>
-                <ExternalLink size={14} className="text-outline-variant" />
-              </a>
-              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
-                <span>Network Hospital List</span>
-                <ExternalLink size={14} className="text-outline-variant" />
-              </a>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="ml-14 border-b border-outline-variant/10" />
 

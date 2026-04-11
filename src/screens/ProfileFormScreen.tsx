@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Camera, ShieldCheck } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -62,6 +62,11 @@ export const ProfileFormScreen = ({ onSaved }: { onSaved: () => void }) => {
   );
 
   const setField = (key: keyof ProfileForm, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  // Auto-save draft on every change
+  useEffect(() => {
+    localStorage.setItem('surepath_user_profile', JSON.stringify({ form, profileImage }));
+  }, [form, profileImage]);
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
