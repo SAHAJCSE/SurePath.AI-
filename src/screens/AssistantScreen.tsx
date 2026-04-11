@@ -266,7 +266,11 @@ export const AssistantScreen = ({ provider, locale }: { provider?: string; local
       
       setMessages((prev) => [...prev, { role: 'assistant', text: data.reply }]);
     } catch (err: any) {
-      setError('AI engine temporarily unavailable. Try again in a moment.');
+      console.warn('AI engine API failed, using local processing:', err);
+      // Local processing fallback
+      const savedProfile = getSavedProfile();
+      const reply = localAssistantReply(text, !!savedProfile, savedProfile);
+      setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
     } finally {
       setIsLoading(false);
     }

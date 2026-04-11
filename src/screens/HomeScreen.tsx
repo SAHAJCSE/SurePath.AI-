@@ -122,14 +122,15 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
             <button
                onClick={() => {
                  const id = localStorage.getItem('surepath_policy_id');
-                 if (id) {
-                   onStart();
-                 } else {
-                   setUploadState('error');
-                   setUploadMessage('Please upload a policy or try the Demo first!');
+                 if (!id) {
+                   // Auto-fallback to LIC demo data if they just click Get Started
+                   localStorage.setItem('surepath_selected_provider', 'lic');
+                   localStorage.setItem('surepath_policy_id', 'demo-policy-id');
+                   localStorage.setItem('surepath_policy_name', 'Jeevan Arogya (Demo)');
                  }
+                 onStart();
                }}
-               className="w-full md:w-auto px-8 h-14 bg-primary text-on-primary rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-3 hover:opacity-90 active:scale-95 transition-all"
+               className="w-full md:w-auto px-8 h-14 bg-primary text-on-primary rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all"
             >
               Get Started <ArrowRight size={18} />
             </button>
