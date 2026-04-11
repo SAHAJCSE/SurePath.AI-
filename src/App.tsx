@@ -52,7 +52,13 @@ export default function App() {
     setLocale(targetLocale);
     localStorage.setItem('surepath_locale', targetLocale);
     
+    // Set the cookie that Google Translate looks for on page load/change
+    const cookieValue = targetLocale === 'en' ? '/en/en' : '/en/hi';
+    document.cookie = `googtrans=${cookieValue}; path=/;`;
+    document.cookie = `googtrans=${cookieValue}; path=/; domain=localhost;`; // Specifically for local dev
+    
     try {
+      // Also try the select element for immediate effect if it's already loaded
       const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
       if (select) {
         select.value = targetLocale;
@@ -62,6 +68,11 @@ export default function App() {
       console.error('Google Translate trigger failed', e);
     }
     
+    // Force a reload if the select wasn't found - this is the most reliable way
+    if (!document.querySelector('.goog-te-combo')) {
+      window.location.reload();
+    }
+
     document.documentElement.lang = targetLocale;
   };
 
