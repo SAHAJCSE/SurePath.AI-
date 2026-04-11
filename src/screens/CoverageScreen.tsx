@@ -2,6 +2,8 @@ import { motion } from 'motion/react';
 import { usePolicy } from '../hooks/usePolicy';
 import CoverageVisualizer from '../components/features/CoverageVisualizer';
 import ExclusionsHighlighter from '../components/features/ExclusionsHighlighter';
+import CoveragePieChart from '../components/features/CoveragePieChart';
+import CoverageBarChart from '../components/features/CoverageBarChart';
 import { ShieldCheck, Loader2, CheckCircle, XCircle, Building2, Wallet, AlertCircle, Info } from 'lucide-react';
 
 export const CoverageScreen = () => {
@@ -33,6 +35,13 @@ export const CoverageScreen = () => {
 
   const selectedProviderId = localStorage.getItem('surepath_selected_provider') || 'lic';
   const insurerLogo = logoMap[selectedProviderId] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnrG9B3t6XlJ7z-y8YvT5oK6kE-yH6zX-fXhGjR-K8u5-zG-z-H_kS8z-E_s_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z_G_z';
+
+  const coverageData = [
+    { name: "Assigned Base", value: (policy as any).coverage?.totalCoverage || 0 },
+    { name: "Hospitalization", value: (policy as any).coverage?.hospitalization || 0 },
+    { name: "Accidental", value: (policy as any).coverage?.accidentalCoverage || 0 },
+    { name: "Critical Illness", value: (policy as any).coverage?.criticalIllness || 0 }
+  ];
 
   return (
     <motion.main
@@ -79,6 +88,18 @@ export const CoverageScreen = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recharts Analytics Grid */}
+      <section className="space-y-6">
+        <h3 className="text-xl font-headline font-bold text-on-surface px-2 flex items-center gap-3">
+          AI Coverage Analytics 
+          <span className="text-[10px] bg-[#10B981]/10 text-[#10B981] font-black border border-[#10B981]/20 px-2 py-0.5 rounded-full uppercase tracking-widest">Live Sync</span>
+        </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <CoveragePieChart data={coverageData} />
+          <CoverageBarChart data={coverageData} />
         </div>
       </section>
 
