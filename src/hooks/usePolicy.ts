@@ -30,11 +30,33 @@ export function usePolicy() {
 
         if (!res.ok) throw new Error('Failed to parse policy');
         const data = await res.json();
-        setPolicy(data);
+        
+        // Map new schema to the UI fields
+        const temp = data.analysis;
+        const mappedPolicy: ParsedPolicy = {
+          ...temp,
+          totalSumInsured: temp.coverage?.totalCoverage || 0,
+          insurer: temp.policyHolder?.insurer || provider,
+          policyName: temp.policyHolder?.policyType || 'Insurance Policy',
+          generalConditions: temp.insights || [],
+          exclusions: (temp.exclusions || []).map((exc: string) => ({
+            title: 'Exclusion',
+            description: exc,
+            severity: 'medium'
+          })),
+          coverages: temp.benefits ? temp.benefits.map((b: any) => ({
+            name: b.title,
+            amount: b.amount,
+            unit: '₹',
+            isCovered: true
+          })) : []
+        };
+        
+        setPolicy(mappedPolicy);
       } catch (err: any) {
         console.error('Fetch error, falling back to LIC data:', err);
         // Fallback to default LIC data on fetch failure
-        setPolicy(samplePolicies[provider] || samplePolicies['lic']);
+        setPolicy(samplePolicies[provider] || samplePolicies['lic'] as any);
         // We don't set error here because we are providing a fallback
       } finally {
         setLoading(false);

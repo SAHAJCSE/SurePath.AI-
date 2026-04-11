@@ -156,7 +156,7 @@ export async function analyzePolicyMasterPrompt(opts: {
   try {
     const resp = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      generationConfig: {
+      config: {
         temperature: 0.1,
         maxOutputTokens: 4000,
       },
@@ -164,11 +164,10 @@ export async function analyzePolicyMasterPrompt(opts: {
     });
 
     const parsed = safeJsonParse(resp.text ?? '') as PolicyAnalysis;
-    if (!parsed || !parsed.policy_overview) {
+    if (!parsed || !parsed.policyHolder) {
       return demoMasterPromptAnalysis(opts.provider, opts.policyName);
     }
 
-    parsed.overall_clarity_score = clamp01to100(parsed.overall_clarity_score, 70);
     return parsed;
   } catch (err) {
     console.error('Master analysis error:', err);
@@ -190,9 +189,26 @@ export async function simulateScenario(opts: {
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const system = `You are a claim scenario simulator.
-Return STRICT JSON only: { covered: boolean, amount: string, riskLevel: "low"|"medium"|"high", steps: string[], explanation: string }
-If uncertain, set covered = false and explain why.`;
+  const system = `You are an Insurance Claim Simulator.
+
+Given:
+1. Policy JSON
+2. User scenario
+
+Calculate:
+- Covered amount
+- Out-of-pocket cost
+- Risk level
+
+Explain in 1–2 lines (human-friendly).
+
+Output JSON only:
+{
+  "coveredAmount": 0,
+  "outOfPocket": 0,
+  "riskLevel": "",
+  "message": ""
+}`;
 
   const prompt = [
     `Locale: ${locale}`,
@@ -213,11 +229,11 @@ If uncertain, set covered = false and explain why.`;
     if (!parsed) return demoScenario(opts.scenarioId, locale);
 
     return {
-      covered: Boolean(parsed.covered),
-      amount: String(parsed.amount ?? 'N/A'),
-      riskLevel: parsed.riskLevel === 'low' || parsed.riskLevel === 'high' ? parsed.riskLevel : 'medium',
-      steps: Array.isArray(parsed.steps) ? parsed.steps.slice(0, 6).map((s: any) => String(s)) : [],
-      explanation: String(parsed.explanation ?? ''),
+      covered: Boolean(parsed.coveredAmount > 0),
+      amount: String(parsed.coveredAmount ?? '0'),
+      riskLevel: (parsed.riskLevel || '').toLowerCase() === 'high' ? 'high' : ((parsed.riskLevel || '').toLowerCase() === 'low' ? 'low' : 'medium'),
+      steps: [], // Deprecated in new prompt, keep empty array for backwards compat in UI if needed
+      explanation: String(parsed.message ?? ''),
     };
   } catch {
     return demoScenario(opts.scenarioId, locale);
@@ -422,63 +438,70 @@ function demoAssistantReply(messages: Array<{ role: 'user' | 'assistant'; text: 
 
 function demoMasterPromptAnalysis(provider?: string, policyName?: string): PolicyAnalysis {
   const p = (provider || '').toLowerCase();
+  const insurer = p.includes('hdfc') ? 'HDFC ERGO' : p.includes('sbi') ? 'SBI Life Insurance' : p.includes('icici') ? 'ICICI Prudential' : 'Life Insurance Corporation (LIC)';
+  
   return {
-    policy_overview: {
-      policy_type: p.includes('hdfc') ? 'Health Insurance' : p.includes('sbi') ? 'Health Insurance' : p.includes('icici') ? 'Health + Life' : 'Health Insurance',
-      insurer_name: p.includes('hdfc') ? 'HDFC ERGO' : p.includes('sbi') ? 'SBI Life Insurance' : p.includes('icici') ? 'ICICI Prudential' : 'Life Insurance Corporation (LIC)',
-      policy_name: policyName || "Jeevan Arogya",
-      sum_insured: '₹5 Lakhs',
-      policy_period: '1 year (Demo)'
+    policyHolder: {
+      name: "John Doe",
+      dob: "1990-01-01",
+      gender: "Male",
+      policyNumber: "POL123456789",
+      insurer: insurer,
+      policyType: "Health Insurance"
     },
-    key_coverages: [
+    coverage: {
+      totalCoverage: 500000,
+      accidentalCoverage: 500000,
+      naturalDeath: 0,
+      hospitalization: 500000,
+      criticalIllness: 0
+    },
+    premium: {
+      amount: 15000,
+      frequency: "Annual",
+      nextDueDate: "2027-01-01"
+    },
+    benefits: [
       {
-        coverage_name: 'Hospitalization',
-        description: 'Covers in-patient hospital stays and procedures.',
-        limit: 'Up to ₹5 Lakhs per year',
-        sub_limits: ['Room rent capped at ₹5,000/day'],
-        waiting_period: '30 days initial'
+        title: "Hospital Room Rent",
+        description: "Up to 1% of Sum Insured per day",
+        amount: 5000
       },
       {
-        coverage_name: 'Accidental Death',
-        description: 'Lump sum payment on accidental death.',
-        limit: '₹5 Lakhs',
-        sub_limits: [],
-        waiting_period: 'Immediate'
+        title: "ICU Charges",
+        description: "Up to 2% of Sum Insured per day",
+        amount: 10000
       }
     ],
     exclusions: [
-      {
-        category: 'Pre-existing Diseases',
-        details: 'Conditions present before policy purchase not covered for 48 months.',
-        severity: 'High'
-      },
-      {
-        category: 'Alcohol/Drug Abuse',
-        details: 'Treatment for substance abuse excluded.',
-        severity: 'Medium'
-      }
+      "Pre-existing conditions not covered for first 48 months",
+      "Injuries arising from hazardous sports",
+      "Treatment for substance abuse"
     ],
-    important_clauses: [
-      {
-        clause_name: 'Free Look Period',
-        description: '15 days to review and cancel policy.',
-        impact_on_claim: 'N/A - only for policy cancellation'
-      },
-      {
-        clause_name: 'Claim Intimation',
-        description: 'Inform insurer within 24 hours for accidents.',
-        impact_on_claim: 'Late intimation may lead to rejection'
-      }
-    ],
-    claim_process_summary: '1. Inform insurer within 24 hrs (accident)/7 days (illness). 2. Submit claim form, policy doc, bills, discharge summary. 3. Get pre-auth for cashless. 4. Receive settlement within 30 days. Keep all originals.',
-    scenario_simulation: {
-      example_scenario: 'Bike accident with fracture requiring 3-day hospital stay',
-      likely_eligible_amount: '₹45,000 (hospital bill reimbursement)',
-      possible_reasons_for_rejection: ['No FIR filed', 'Alcohol involved', 'Outside network hospital'],
-      advice: 'Always file FIR for accidents and use network hospitals for cashless'
+    claims: {
+      process: "Inform insurer within 24 hours. Submit all documents within 15 days of discharge.",
+      documentsRequired: ["Claim Form", "Discharge Summary", "Original Hospital Bills", "Copy of FIR (if accident)"],
+      contact: "claims@" + (provider || "insurance") + ".com"
     },
-    overall_clarity_score: 75,
-    recommendation: 'Good basic health policy for young families. Add personal accident rider.'
+    validity: {
+      startDate: "2026-01-01",
+      endDate: "2027-01-01",
+      status: "Active"
+    },
+    riskScore: {
+      score: 35,
+      level: "Low",
+      reason: "Comprehensive coverage with reasonable limits and standard waiting periods."
+    },
+    insights: [
+      "Good base coverage for hospitalization.",
+      "Consider adding a critical illness rider.",
+      "Room rent capping might lead to higher out-of-pocket expenses for premium hospitals."
+    ],
+    meta: {
+      confidence: 0.95,
+      missingFields: []
+    }
   };
 }
 

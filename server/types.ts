@@ -57,48 +57,69 @@ export type ScenarioResult = {
   explanation: string;
 };
 
-export interface PolicyCoverage {
-  coverage_name: string;
+export interface PolicyHolder {
+  name: string;
+  dob: string;
+  gender: string;
+  policyNumber: string;
+  insurer: string;
+  policyType: string;
+}
+
+export interface CoverageData {
+  totalCoverage: number;
+  accidentalCoverage: number;
+  naturalDeath: number;
+  hospitalization: number;
+  criticalIllness: number;
+}
+
+export interface PremiumData {
+  amount: number;
+  frequency: string;
+  nextDueDate: string;
+}
+
+export interface BenefitItem {
+  title: string;
   description: string;
-  limit: string;
-  sub_limits: string[];
-  waiting_period: string;
+  amount: number;
 }
 
-export interface PolicyExclusion {
-  category: string;
-  details: string;
-  severity: 'High' | 'Medium' | 'Low';
+export interface ClaimsData {
+  process: string;
+  documentsRequired: string[];
+  contact: string;
 }
 
-export interface ImportantClause {
-  clause_name: string;
-  description: string;
-  impact_on_claim: string;
+export interface ValidityData {
+  startDate: string;
+  endDate: string;
+  status: string;
 }
 
-export interface ScenarioSimulation {
-  example_scenario: string;
-  likely_eligible_amount: string;
-  possible_reasons_for_rejection: string[];
-  advice: string;
+export interface RiskScoreData {
+  score: number;
+  level: 'Low' | 'Medium' | 'High';
+  reason: string;
+}
+
+export interface MetaData {
+  confidence: number;
+  missingFields: string[];
 }
 
 export interface PolicyAnalysis {
-  policy_overview: {
-    policy_type: string;
-    insurer_name: string;
-    policy_name: string;
-    sum_insured: string | number;
-    policy_period: string;
-  };
-  key_coverages: PolicyCoverage[];
-  exclusions: PolicyExclusion[];
-  important_clauses: ImportantClause[];
-  claim_process_summary: string;
-  scenario_simulation: ScenarioSimulation;
-  overall_clarity_score: number;
-  recommendation: string;
+  policyHolder: PolicyHolder;
+  coverage: CoverageData;
+  premium: PremiumData;
+  benefits: BenefitItem[];
+  exclusions: string[];
+  claims: ClaimsData;
+  validity: ValidityData;
+  riskScore: RiskScoreData;
+  insights: string[];
+  meta: MetaData;
 }
 
 export type StoredPolicy = {
@@ -111,13 +132,4 @@ export type StoredPolicy = {
   lastAnalysis?: PolicyAnalysis;
 };
 
-export type StoredPolicy = {
-  policyId: string;
-  uploadedAt: number;
-  filename?: string;
-  mimeType?: string;
-  rawText: string;
-  lastSummary?: SmartSummary;
-  lastAnalysis?: PolicyAnalysis;
-};
 
