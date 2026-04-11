@@ -8,7 +8,7 @@ export const BottomNav = ({ activeScreen, setScreen }: { activeScreen: Screen, s
     { id: 'summary', icon: BarChart2, label: 'Summary' },
     { id: 'coverage', icon: ShieldCheck, label: 'Coverage' },
     { id: 'simulator', icon: Calculator, label: 'Simulator' },
-    { id: 'profile_form', icon: User, label: 'Profile' },
+    { id: 'profile', icon: User, label: 'Profile' },
   ];
 
   return (
