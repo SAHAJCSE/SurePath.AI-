@@ -24,11 +24,13 @@ Insurance policies are notoriously complex. Filled with dense "legalese" and hid
 **SurePath AI** is an intelligent insurance companion designed to bridge the gap between complex legal documents and clear, actionable knowledge.
 
 ### Key Features:
-- **Smart Policy Analysis**: Upload any insurance PDF/Text and get an instant AI-powered summary.
-- **Scenario Simulator**: Test your coverage against real-world events (e.g., "What happens if I have a bike accident?") with visual eligibility simulations.
-- **AI Insurance Assistant**: A context-aware chatbot that answer specific questions about your policy strictly based on the uploaded document.
-- **Safety Score**: A proprietary 0-100 score indicating the resilience of your policy coverage.
-- **Multi-language Support**: Seamless Hindi/English toggle using browser-level translation for maximum accessibility.
+- **🛡️ AI Policy Decipher**: Upload any insurance PDF/Text and get an instant AI-powered summary.
+- **📊 Coverage Visualizer**: Interactive Recharts breakdown of sum insured and benefits.
+- **🚫 Exclusions Highlighter**: Drilled-down view of "What's NOT Covered" categorized by severity (High/Med/Low).
+- **🔮 Scenario Simulator**: Test your coverage against real-world events (e.g., "What happens if I have a bike accident?") with visual eligibility simulations.
+- **💬 Smart Assistant**: AI concierge trained on policy logic and **LIC procedures** (Fund Value, Surrender Value, etc.).
+- **🇮🇳 Multi-Lingual Support**: One-tap toggle for Hindi and English.
+- **🏁 Quick Start**: Integrated demo policy for instant evaluation without document upload.
 
 ## 🛠️ Tech Stack
 
@@ -72,17 +74,13 @@ PORT=5050
 ```
 
 ### 4. Run the Application
-You need to run both the frontend and the backend server.
+You can run both the frontend and the backend server simultaneously with a single command:
 
-**Terminal 1 (Frontend):**
 ```bash
-npm run dev
+npm run dev:full
 ```
 
-**Terminal 2 (Backend Server):**
-```bash
-npm run server
-```
+The application will be available at `http://localhost:3000`.
 
 The application will be available at `http://localhost:3000`.
 

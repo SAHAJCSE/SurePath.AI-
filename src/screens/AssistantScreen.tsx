@@ -12,7 +12,13 @@ type AssistantScreenProps = {
 };
 
 import { API_BASE } from '../config';
-const QUICK = ['Ask about accident coverage', 'Check claim eligibility', 'What documents are required?', 'Show my saved profile summary'];
+const QUICK = [
+  'How to check LIC Fund Value?',
+  'Download policy statement',
+  'What is Free-look period?',
+  'Check Surrender Value',
+  'Ask about accident coverage'
+];
 
 type SavedProfile = {
   form: {
@@ -143,6 +149,46 @@ Please save your profile first. Once you do, I can provide personalized answers 
 👉 Next Steps:
 - Need the list of required documents?
 - Check your claim eligibility?`;
+  }
+
+  // LIC Procedure: Fund Value
+  if (q.includes('fund value')) {
+    return `✅ To check the fund value of your LIC policy online:
+    
+1. Go to the official LIC website.
+2. Log in to the customer portal.
+3. Navigate to **Policy Details**.
+4. Click on **View Fund Value**.
+
+You can also see fund allocation across different investment options if available.`;
+  }
+
+  // LIC Procedure: Statement
+  if (q.includes('statement') || q.includes('download')) {
+    return `✅ To download your LIC policy statement:
+
+1. Visit the LIC official website and go to **Customer Services**.
+2. Click on **Download Policy Statement**.
+3. Log in with your policy number and Date of Birth.
+4. Once logged in, you can view or download the statement in PDF format.`;
+  }
+
+  // LIC Procedure: Free-look
+  if (q.includes('free-look') || q.includes('cancel') || q.includes('15 days')) {
+    return `✅ LIC offers a **Free-look period** (usually 15 to 30 days) from the date of receiving the policy document.
+
+During this time, if you are not satisfied with the terms, you can cancel the policy and receive a refund of the premiums paid.`;
+  }
+
+  // LIC Procedure: Surrender Value
+  if (q.includes('surrender value')) {
+    return `✅ To check the surrender value of your LIC policy:
+
+1. **Online**: Log in to the LIC portal and check policy-related info.
+2. **Contact**: Reach out to LIC customer service with your policy details.
+3. **Documents**: Review your policy document's terms and conditions section. 
+
+Surrender value is typically the amount you get if you terminate the policy before maturity.`;
   }
 
   // Hospitalization

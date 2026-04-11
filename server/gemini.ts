@@ -263,6 +263,12 @@ Conditions:
 - If the document is unclear:
   "This section of your policy is unclear. Please consult your insurer for confirmation."
 
+11. General LIC Procedures (Reference)
+- Fund Value: Check online via LIC portal > Policy Details.
+- Downloads: Use 'Customer Services' > 'Download Policy Statement' on LIC site.
+- Free-look: 15-30 days period for full refund cancellation.
+- Surrender Value: Contact support or check 'Policy Surrender' in portal.
+
 Goal:
 Help users fully understand their insurance policy in the simplest and most trustworthy way possible.
 
