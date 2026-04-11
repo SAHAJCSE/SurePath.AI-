@@ -41,10 +41,12 @@ export const Header = ({ locale, toggleLanguage }: { locale: 'en' | 'hi', toggle
     <div className="flex items-center gap-4">
       <button 
         onClick={toggleLanguage}
-        className="notranslate flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-high transition-all active:scale-95 shadow-sm"
+        className="notranslate flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-95 shadow-lg shadow-primary/5 group"
       >
-        <Languages size={16} className="text-primary" />
-        <span className="text-xs font-bold uppercase tracking-wider">{locale === 'en' ? 'English' : 'हिंदी'}</span>
+        <Languages size={18} className="transition-transform group-hover:rotate-12" />
+        <span className="text-xs font-black uppercase tracking-widest">
+          {locale === 'en' ? 'Hindi / हिंदी' : 'English / अंग्रेज़ी'}
+        </span>
       </button>
 
       <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">

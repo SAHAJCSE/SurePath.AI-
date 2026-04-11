@@ -14,6 +14,7 @@ import { ProviderSelection } from './screens/ProviderSelection';
 import { PolicyVerification } from './screens/PolicyVerification';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { ProfileFormScreen } from './screens/ProfileFormScreen';
+import { TranslationConsent } from './components/TranslationConsent';
 
 // --- Components ---
 
@@ -42,27 +43,45 @@ import { ProfileFormScreen } from './screens/ProfileFormScreen';
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [showConsent, setShowConsent] = useState(false);
   const [locale, setLocale] = useState<'en' | 'hi'>(() => {
     return (localStorage.getItem('surepath_locale') as 'en' | 'hi') || 'en';
   });
 
-  const toggleLanguage = () => {
-    const next = locale === 'en' ? 'hi' : 'en';
-    setLocale(next);
-    localStorage.setItem('surepath_locale', next);
+  const triggerTranslation = (targetLocale: 'en' | 'hi') => {
+    setLocale(targetLocale);
+    localStorage.setItem('surepath_locale', targetLocale);
     
-    // Trigger browser translation via Google Translate
     try {
       const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
       if (select) {
-        select.value = next;
+        select.value = targetLocale;
         select.dispatchEvent(new Event('change'));
       }
     } catch (e) {
       console.error('Google Translate trigger failed', e);
     }
     
-    document.documentElement.lang = next;
+    document.documentElement.lang = targetLocale;
+  };
+
+  const toggleLanguage = () => {
+    const next = locale === 'en' ? 'hi' : 'en';
+    
+    // Check for explicit consent if switching to Hindi
+    const hasConsent = localStorage.getItem('surepath_translation_consent') === 'true';
+    
+    if (next === 'hi' && !hasConsent) {
+      setShowConsent(true);
+    } else {
+      triggerTranslation(next);
+    }
+  };
+
+  const handleGrantConsent = () => {
+    localStorage.setItem('surepath_translation_consent', 'true');
+    setShowConsent(false);
+    triggerTranslation('hi');
   };
 
   useEffect(() => {
@@ -154,6 +173,15 @@ export default function App() {
           100% { transform: translateX(100%); }
         }
       `}</style>
+
+      <AnimatePresence>
+        {showConsent && (
+          <TranslationConsent 
+            onAccept={handleGrantConsent} 
+            onCancel={() => setShowConsent(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
