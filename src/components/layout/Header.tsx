@@ -35,17 +35,17 @@ export const Header = ({ locale, toggleLanguage }: { locale: 'en' | 'hi', toggle
           referrerPolicy="no-referrer"
         />
       </div>
-      <h1 className="font-headline font-extrabold text-xl text-primary">SurePath AI</h1>
+      <h1 className="font-headline font-extrabold text-xl text-primary hidden sm:block">SurePath AI</h1>
     </div>
     
     <div className="flex items-center gap-4">
       <button 
         onClick={toggleLanguage}
-        className="notranslate flex items-center gap-2 px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-95 shadow-lg shadow-primary/5 group"
+        className="notranslate flex items-center gap-2 px-3 sm:px-4 py-2 rounded-2xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-on-primary transition-all active:scale-95 shadow-lg shadow-primary/5 group"
       >
         <Languages size={18} className="transition-transform group-hover:rotate-12" />
-        <span className="text-xs font-black uppercase tracking-widest">
-          {locale === 'en' ? 'Hindi / हिंदी' : 'English / अंग्रेज़ी'}
+        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest leading-none">
+          {locale === 'en' ? 'Hindi' : 'English'}
         </span>
       </button>
 

@@ -59,28 +59,6 @@ export default function App() {
   const triggerTranslation = (targetLocale: 'en' | 'hi') => {
     setLocale(targetLocale);
     localStorage.setItem('surepath_locale', targetLocale);
-    
-    // Set the cookie that Google Translate looks for on page load/change
-    const cookieValue = targetLocale === 'en' ? '/en/en' : '/en/hi';
-    document.cookie = `googtrans=${cookieValue}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; path=/; domain=localhost;`; // Specifically for local dev
-    
-    try {
-      // Also try the select element for immediate effect if it's already loaded
-      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (select) {
-        select.value = targetLocale;
-        select.dispatchEvent(new Event('change'));
-      }
-    } catch (e) {
-      console.error('Google Translate trigger failed', e);
-    }
-    
-    // Force a reload if the select wasn't found - this is the most reliable way
-    if (!document.querySelector('.goog-te-combo')) {
-      window.location.reload();
-    }
-
     document.documentElement.lang = targetLocale;
   };
 
@@ -102,18 +80,6 @@ export default function App() {
     setShowConsent(false);
     triggerTranslation('hi');
   };
-
-  useEffect(() => {
-    // Hidden Google Translate init check or auto-apply on load
-    const timer = setTimeout(() => {
-      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (select && select.value !== locale) {
-        select.value = locale;
-        select.dispatchEvent(new Event('change'));
-      }
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [locale]);
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
@@ -170,7 +136,7 @@ export default function App() {
         )}
         {screen === 'assistant' && (
           <motion.div key="assistant" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <AssistantScreen provider={selectedProvider} />
+            <AssistantScreen provider={selectedProvider} locale={locale} />
           </motion.div>
         )}
       </AnimatePresence>

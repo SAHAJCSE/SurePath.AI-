@@ -23,7 +23,7 @@ export const TranslationConsent = ({ onAccept, onCancel }: { onAccept: () => voi
         </h3>
         
         <p className="text-sm text-on-surface-variant font-medium leading-relaxed mb-8">
-          To provide a seamless <span className="text-primary font-bold">Hindi</span> experience, SurePath AI uses Google Translate technology. By proceeding, you agree to allow the browser to translate the page content.
+          To provide a seamless <span className="text-primary font-bold">Hindi</span> experience, SurePath AI uses a proprietary <span className="text-primary font-bold">AI-Powered Plain Language Engine</span>. This engine simplifies complex policy legal-speak into clear, understandable Hindi for you.
         </p>
 
         <div className="space-y-3">

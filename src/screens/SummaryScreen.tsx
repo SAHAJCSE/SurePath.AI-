@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { usePolicy } from '../hooks/usePolicy';
+import { API_BASE } from '../config';
 import { 
   Loader2, 
   BrainCircuit, 
@@ -19,9 +21,38 @@ import {
 } from 'lucide-react';
 
 export const SummaryScreen = () => {
-  const { policy, loading, error } = usePolicy();
+  const { policy, loading: policyLoading, error } = usePolicy();
+  const [smartSummary, setSmartSummary] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const locale = (localStorage.getItem('surepath_locale') as 'en' | 'hi') || 'en';
 
-  if (loading) {
+  useEffect(() => {
+    if (policy && !smartSummary && !summaryLoading) {
+      const fetchSummary = async () => {
+        setSummaryLoading(true);
+        try {
+          const res = await fetch(`${API_BASE}/api/policy/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              policyId: localStorage.getItem('surepath_policy_id'),
+              provider: localStorage.getItem('surepath_selected_provider'),
+              locale
+            }),
+          });
+          const data = await res.json();
+          setSmartSummary(data.plainSummary);
+        } catch (e) {
+          console.error('Failed to fetch smart summary', e);
+        } finally {
+          setSummaryLoading(false);
+        }
+      };
+      fetchSummary();
+    }
+  }, [policy, locale]);
+
+  if (policyLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="animate-spin text-primary" size={48} />
@@ -91,9 +122,10 @@ export const SummaryScreen = () => {
         <div className="lg:col-span-12 bg-surface-container-lowest rounded-[3rem] p-1 shadow-xl shadow-primary/5 border border-outline-variant/20 overflow-hidden">
           <div className="flex flex-col md:flex-row items-center gap-10 p-10 bg-gradient-to-br from-white to-surface-container-low rounded-[2.9rem]">
             {/* Left: Scoring Ring */}
-            <div className="relative w-48 h-48 flex items-center justify-center shrink-0">
+            <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center shrink-0">
                <svg className="w-full h-full transform -rotate-90">
-                <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-surface-container-high" />
+                <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="10" fill="transparent" className="text-surface-container-high block sm:hidden" />
+                <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-surface-container-high hidden sm:block" />
                 <circle 
                   cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" 
                   strokeDasharray={502.6}
@@ -115,8 +147,17 @@ export const SummaryScreen = () => {
                 <BrainCircuit className="absolute -top-3 -left-3 text-primary bg-white p-1 rounded-lg border border-primary/20" size={32} />
                 <h4 className="text-xl font-headline font-black text-primary mb-3">Executive Summary</h4>
                 <p className="text-on-surface-variant font-medium leading-relaxed">
-                  Your <span className="text-on-surface font-bold">{policy.insurer} {policy.policyName}</span> plan provides solid protection for major hospitalization. However, our AI detected a 
-                  <span className="text-error font-bold"> high-risk 48-month waiting period</span> for pre-existing conditions. We suggest maintaining a back-up plan until this period clears.
+                  {summaryLoading ? (
+                    <span className="flex items-center gap-2 italic animate-pulse">
+                      <Zap size={14} /> AI is generating localized insights...
+                    </span>
+                  ) : (
+                    smartSummary || (
+                      locale === 'hi' 
+                      ? `आपकी ${policy.insurer} ${policy.policyName} योजना प्रमुख अस्पताल में भर्ती के लिए ठोस सुरक्षा प्रदान करती है। हालांकि, हमारे AI ने पहले से मौजूद स्थितियों के लिए 48 महीने की प्रतीक्षा अवधि का पता लगाया है।`
+                      : `Your ${policy.insurer} ${policy.policyName} plan provides solid protection for major hospitalization. However, our AI detected a high-risk waiting period for pre-existing conditions.`
+                    )
+                  )}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -138,7 +179,7 @@ export const SummaryScreen = () => {
         {/* Coverage Highlights Grid */}
         <div className="lg:col-span-12 space-y-6">
            <h4 className="text-xl font-headline font-black text-on-surface px-2">Key Highlights</h4>
-           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {highlights.map((item, idx) => (
                 <div key={idx} className="bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-all hover:bg-surface-container-low group">
                    <div className="flex justify-between items-start mb-6 w-full">

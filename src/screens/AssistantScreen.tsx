@@ -221,23 +221,17 @@ Surrender value is typically the amount you get if you terminate the policy befo
 - Or try one of the quick buttons below!`;
 }
 
-export const AssistantScreen = ({ provider }: AssistantScreenProps) => {
-  const policyId = localStorage.getItem('surepath_policy_id') || '';
-  const policyName = localStorage.getItem('surepath_policy_name') || '';
-  const loggedIn = localStorage.getItem('surepath_user_logged_in') === 'true';
-  const savedProfile = getSavedProfile();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      text: loggedIn
-        ? `✅ Hello ${savedProfile?.form?.firstName || ''}! I am **SurePath AI**, your personal insurance guide.
-
-I can help you decipher your coverage, check eligibility, or walk you through a claim. What's on your mind today?`
-        : `✅ Hello! I am **SurePath AI**. 
-
-I help make insurance simple. Please save your profile so I can provide personalized guidance for your specific situation.`,
-    },
-  ]);
+export const AssistantScreen = ({ provider, locale }: { provider?: string; locale: 'en' | 'hi' }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    return [
+      {
+        role: 'assistant',
+        text: locale === 'hi'
+          ? `नमस्ते! मैं **SurePath AI** हूँ। मैं आपकी पॉलिसी समझने और दावों (claims) में मदद कर सकता हूँ। आप क्या जानना चाहते हैं?`
+          : `✅ Hello! I am **SurePath AI**, your personal insurance guide. I can help you decipher your coverage, check eligibility, or walk you through a claim.`
+      }
+    ];
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -248,6 +242,7 @@ I help make insurance simple. Please save your profile so I can provide personal
     const text = (rawText ?? input).trim();
     if (!text || isLoading) return;
 
+    const policyId = localStorage.getItem('surepath_policy_id') || '';
     const nextMessages = [...messages, { role: 'user' as const, text }];
     setMessages(nextMessages);
     setInput('');
@@ -255,12 +250,23 @@ I help make insurance simple. Please save your profile so I can provide personal
     setError('');
 
     try {
-      // WhatsApp-like typing pause before response.
-      await new Promise((r) => setTimeout(r, 700));
-      const reply = localAssistantReply(text, loggedIn, savedProfile);
-      setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-    } catch {
-      setError('Something went wrong, try again.');
+      const res = await fetch(`${API_BASE}/api/assistant/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages,
+          policyId,
+          provider,
+          locale
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to get response');
+      const data = await res.json();
+      
+      setMessages((prev) => [...prev, { role: 'assistant', text: data.reply }]);
+    } catch (err: any) {
+      setError('AI engine temporarily unavailable. Try again in a moment.');
     } finally {
       setIsLoading(false);
     }

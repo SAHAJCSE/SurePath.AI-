@@ -3,10 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
-import { extractTextFromUpload, normalizeText } from './text-extract.js';
-import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed } from './gemini.js';
-import { getPolicy, putPolicy, updatePolicy } from './storage.js';
-import type { ScenarioRequest } from './types.js';
+import { extractTextFromUpload, normalizeText } from './text-extract';
+import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed } from './gemini';
+import { getPolicy, putPolicy, updatePolicy } from './storage';
+import type { ScenarioRequest } from './types';
 
 const app = express();
 
@@ -14,15 +14,27 @@ const configuredOrigin = process.env.ALLOWED_ORIGIN?.trim();
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow non-browser tools (no Origin header)
+      // 1. Allow non-browser requests
       if (!origin) return callback(null, true);
-      if (configuredOrigin && origin === configuredOrigin) return callback(null, true);
-      // Dev-friendly allowlist for localhost and local network Vite URLs.
-      if (/^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin) || /^http:\/\/192\.168\.\d+\.\d+:\d+$/.test(origin) || /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/.test(origin) || /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+:\d+$/.test(origin)) {
+      
+      // 2. Trust Vercel origins automatically
+      if (process.env.VERCEL || origin.endsWith('.vercel.app')) {
         return callback(null, true);
       }
+
+      // 3. Allow manual config or local dev
+      if (
+        (configuredOrigin && origin === configuredOrigin) || 
+        /^http:\/\/localhost:\d+$/.test(origin) || 
+        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin) ||
+        /^http:\/\/192\.168\.\d+\.\d+:\d+$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      
       return callback(new Error('CORS not allowed'));
     },
+    credentials: true,
   }),
 );
 app.use(express.json({ limit: '2mb' }));
@@ -189,9 +201,20 @@ app.post('/api/assistant/chat', async (req, res) => {
   }
 });
 
-const port = Number(process.env.PORT || 5050);
-app.listen(port, '0.0.0.0', () => {
-  // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${port} (CORS: dynamic allowlist)`);
-});
+// In Vercel serverless environment, we don't call app.listen()
+// Vercel handles the execution. In local dev, we need to listen.
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+  const port = Number(process.env.PORT || 5050);
+  app.listen(port, '0.0.0.0', () => {
+    // eslint-disable-next-line no-console
+    console.log(`API listening on http://0.0.0.0:${port} (CORS: dynamic allowlist)`);
+  });
+} else if (!process.env.VERCEL) {
+  // Production standalone (not Vercel)
+  const port = Number(process.env.PORT || 5050);
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Standalone production server on port ${port}`);
+  });
+}
 
+export default app;

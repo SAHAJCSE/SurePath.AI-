@@ -120,7 +120,15 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
 
           <div className="mt-6 flex flex-col md:flex-row gap-4 items-center justify-center">
             <button
-               onClick={onStart}
+               onClick={() => {
+                 const id = localStorage.getItem('surepath_policy_id');
+                 if (id) {
+                   onStart();
+                 } else {
+                   setUploadState('error');
+                   setUploadMessage('Please upload a policy or try the Demo first!');
+                 }
+               }}
                className="w-full md:w-auto px-8 h-14 bg-primary text-on-primary rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-3 hover:opacity-90 active:scale-95 transition-all"
             >
               Get Started <ArrowRight size={18} />
@@ -177,8 +185,8 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
         />
         <StatCard 
           icon={<Languages className="text-[#6366f1]" />} 
-          stat="HINDI" 
-          label="+ English analysis supported" 
+          stat="AI ENGINE" 
+          label="NATIVE HINGLISH SUPPORT" 
         />
       </section>
 
