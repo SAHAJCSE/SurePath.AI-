@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck, User, ChevronRight, FileText, LogOut, Shield, History, HelpCircle, Headphones, Verified, Settings, Mail, Phone, MessageSquare, ExternalLink } from 'lucide-react';
 
@@ -21,12 +21,22 @@ function getStoredProfile() {
 export const ProfileScreen = ({ onEdit, onHelp }: { onEdit: () => void, onHelp: () => void }) => {
   const profileInfoRef = useRef<HTMLDivElement | null>(null);
   const documentsRef = useRef<HTMLDivElement | null>(null);
-  const stored = getStoredProfile();
+  const [profileData, setProfileData] = useState(getStoredProfile());
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncProfile = () => setProfileData(getStoredProfile());
+    window.addEventListener('storage', syncProfile);
+    const interval = setInterval(syncProfile, 1000);
+    return () => {
+      window.removeEventListener('storage', syncProfile);
+      clearInterval(interval);
+    };
+  }, []);
   
-  const firstName = stored?.form?.firstName || 'Alexander';
-  const lastName = stored?.form?.lastName || 'Sterling';
-  const profileImage = stored?.profileImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBp9VKaMkpzqXYcAs45N1Xi0mFAuI4yxOA7AtWXwpXSSSFvrJE1gYqf1Dftiq048fgOb2ZJPPudseEszT0YsF9DhOVA3epnsPasIEAqiYLdUgO11iAB0bQCq6OZupbgxM6D6HIzhfv9t2Xtd3DiA2MD_B9UYjB0RQsEEcOJ0ITwN1US9WEBp6ag3m7_IDcWpXQwOPdyn5msYpRkckPHHL0LCZHkhXaqU4jYXgCCAW8XjKNkqVtu6CtlRU_oRiBQXit1QxqntNJvbjgz';
+  const firstName = profileData?.form?.firstName || 'User';
+  const lastName = profileData?.form?.lastName || '';
+  const profileImage = profileData?.profileImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDV9yVn2Oa2ZjA1eglpBipuHrkUufp3AWRbCKeXDq8KTYARukLLzjTuC1kwzm2nzCqFm8ttH5ieV6RewqiAuFQRkZE2ebh4xiv5Lr6yVCJ8W7WkxBJ48uBn8PD0ROo9Ywoz4L6evxGNjalb3ulxew3y6vwoDub7U1kSjqGi03qthcE1UadlLiz2VnNrCQUz9tObkq6Pr-Xc3MTjwIB_wggnzb5-7VPISV87OhkOsl6pY9wKfjdQffctz0bd9Kl5uwtfotjlQA6rozEn';
 
   return (
   <motion.main 

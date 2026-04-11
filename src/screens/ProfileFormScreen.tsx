@@ -16,15 +16,15 @@ type ProfileForm = {
 };
 
 const initialForm: ProfileForm = {
-  firstName: 'Alexander',
+  firstName: '',
   middleName: '',
-  lastName: 'Sterling',
-  dob: '1997-06-10',
+  lastName: '',
+  dob: '',
   gender: 'Male',
   countryCode: '+91',
-  mobile: '9876543210',
-  email: 'alexander@example.com',
-  pinCode: '560001',
+  mobile: '',
+  email: '',
+  pinCode: '',
 };
 
 function getStoredProfile() {
@@ -58,7 +58,7 @@ export const ProfileFormScreen = ({ onSaved }: { onSaved: () => void }) => {
   const [savedMessage, setSavedMessage] = useState('');
   const [profileImage, setProfileImage] = useState<string>(
     stored?.profileImage ??
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuARVvRCt8C_1r0M0GtsrFuOkwMmkRHMnISp8_v6F_8o8Ibi0lzzmQmwZ8boGsMxOx_nSyaDs9UxTX8YZRpztPnTvtQZydee0i58GUFNdUbr-i2_9G8QKMomCr1FlgP4Q7eNKL4zqPiB4trTaBEESFCO7RqVtxEMtSz9RixlsHbCksZuoND_Z9ya8y9Zn-eVS-mFJJh-B_IqBBW2_qFOhGugAf-ZSJuFmw-kHcD7CAiVyJZ0agOzbDnQzVr2OG10UgMfFXcTiWm-1Wq8'
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDV9yVn2Oa2ZjA1eglpBipuHrkUufp3AWRbCKeXDq8KTYARukLLzjTuC1kwzm2nzCqFm8ttH5ieV6RewqiAuFQRkZE2ebh4xiv5Lr6yVCJ8W7WkxBJ48uBn8PD0ROo9Ywoz4L6evxGNjalb3ulxew3y6vwoDub7U1kSjqGi03qthcE1UadlLiz2VnNrCQUz9tObkq6Pr-Xc3MTjwIB_wggnzb5-7VPISV87OhkOsl6pY9wKfjdQffctz0bd9Kl5uwtfotjlQA6rozEn'
   );
 
   const setField = (key: keyof ProfileForm, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
