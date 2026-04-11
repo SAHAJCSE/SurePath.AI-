@@ -175,7 +175,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {screen !== 'home' && screen !== 'verification' && <BottomNav activeScreen={screen} setScreen={handleSetScreen} />}
+      <BottomNav activeScreen={screen} setScreen={handleSetScreen} />
       {screen !== 'assistant' && (
         <button
           onClick={() => handleSetScreen('assistant')}
