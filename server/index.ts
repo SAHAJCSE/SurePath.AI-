@@ -4,7 +4,7 @@ import cors from 'cors';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
 import { extractTextFromUpload, normalizeText } from './text-extract';
-import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed } from './gemini';
+import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed, analyzePolicyMasterPrompt } from './gemini';
 import { getPolicy, putPolicy, updatePolicy } from './storage';
 import type { ScenarioRequest } from './types';
 
@@ -16,7 +16,7 @@ app.use(
     origin(origin, callback) {
       // 1. Allow non-browser requests
       if (!origin) return callback(null, true);
-      
+
       // 2. Trust Vercel origins automatically
       if (process.env.VERCEL || origin.endsWith('.vercel.app')) {
         return callback(null, true);
@@ -24,14 +24,14 @@ app.use(
 
       // 3. Allow manual config or local dev
       if (
-        (configuredOrigin && origin === configuredOrigin) || 
-        /^http:\/\/localhost:\d+$/.test(origin) || 
+        (configuredOrigin && origin === configuredOrigin) ||
+        /^http:\/\/localhost:\d+$/.test(origin) ||
         /^http:\/\/127\.0\.0\.1:\d+$/.test(origin) ||
         /^http:\/\/192\.168\.\d+\.\d+:\d+$/.test(origin)
       ) {
         return callback(null, true);
       }
-      
+
       return callback(new Error('CORS not allowed'));
     },
     credentials: true,
@@ -121,7 +121,40 @@ app.post('/api/policy/analyze', async (req, res) => {
 });
 
 /**
- * Detailed parse for visualizer/exclusions/simulator features.
+ * Master Prompt Policy Analysis (Production-ready JSON extraction).
+ * Body: { policyId?, policyText?, provider?, policyName? }
+ */
+app.post('/api/analyze-policy', async (req, res) => {
+  try {
+    const { policyId, policyText, provider, policyName } = req.body ?? {};
+
+    let rawText = policyText;
+    if (policyId && !policyText) {
+      const policy = getPolicy(policyId);
+      if (!policy) return res.status(404).json({ error: 'Policy not found. Upload first.' });
+      rawText = policy.rawText;
+    }
+    if (!rawText) return res.status(400).json({ error: 'Provide policyId or policyText.' });
+
+    const analysis = await analyzePolicyMasterPrompt({
+      rawText,
+      provider,
+      policyName,
+    });
+
+    // Cache in storage
+    if (policyId) {
+      updatePolicy(policyId, { lastAnalysis: analysis });
+    }
+
+    res.json({ analysis });
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message ?? 'Analysis failed.' });
+  }
+});
+
+/**
+ * Legacy detailed parse for visualizer.
  * Body: { policyId, provider?, policyName? }
  */
 app.post('/api/policy/parse', async (req, res) => {
@@ -138,7 +171,7 @@ app.post('/api/policy/parse', async (req, res) => {
 
     const result = await parsePolicyDetailed({
       rawText: rawText,
-      provider: provider || policyName, // Use provider or policyName
+      provider: provider || policyName,
       policyName
     });
 

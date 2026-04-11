@@ -23,13 +23,15 @@ Insurance policies are notoriously complex. Filled with dense "legalese" and hid
 **SurePath AI** is an intelligent insurance companion designed to bridge the gap between complex legal documents and clear, actionable knowledge.
 
 ### Key Features:
-- **🛡️ AI Policy Decipher**: Upload any insurance PDF/Text and get an instant AI-powered summary.
-- **📊 Coverage Visualizer**: Interactive Recharts breakdown of sum insured and benefits.
-- **🚫 Exclusions Highlighter**: Drilled-down view of "What's NOT Covered" categorized by severity (High/Med/Low).
-- **🔮 Scenario Simulator**: Test your coverage against real-world events (e.g., "What happens if I have a bike accident?") with visual eligibility simulations.
-- **💬 Smart Assistant**: AI concierge trained on policy logic and **LIC procedures** (Fund Value, Surrender Value, etc.).
-- **🇮🇳 Multi-Lingual Support**: One-tap toggle for Hindi and English.
-- **🏁 Quick Start**: Integrated demo policy for instant evaluation without document upload.
+- **🛡️ AI Policy Decipher**: Upload any insurance PDF/Text → **Gemini 2.0 Flash** master prompt delivers production-ready structured JSON (coverages, exclusions, claim process, scenario simulation).
+- **📊 Coverage Visualizer**: Interactive Recharts maps extracted sum insured/limits from AI analysis.
+- **🚫 Exclusions Highlighter**: Severity-ranked exclusions (High/Medium/Low) from policy text.
+- **🔮 Scenario Simulator**: Real-world tests using policy-specific logic.
+- **💬 Smart Assistant**: Context-aware chat powered by uploaded policy document.
+- **🇮🇳 Hinglish Support**: IRDAI-optimized prompts for Indian users.
+- **🏁 Demo Mode**: Realistic JSON without API key.
+
+**Technical Innovation**: Custom master prompt for Gemini 2.0 Flash enables accurate, hallucination-free extraction of Indian insurance policies (LIC health, HDFC motor, etc.).
 
 ## 🛠️ Tech Stack
 

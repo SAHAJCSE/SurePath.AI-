@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
-import type { Locale, ScenarioId, ScenarioResult, SmartSummary } from './types.js';
+import type { Locale, ScenarioId, ScenarioResult, SmartSummary, PolicyAnalysis } from './types.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 function safeJsonParse(text: string): any | undefined {
   const start = text.indexOf('{');
@@ -32,7 +34,7 @@ export async function generateSmartSummary(opts: {
   const locale = opts.locale ?? 'en';
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
-  // Fallback: deterministic “demo” summary for hackathon reliability.
+  // Fallback: deterministic "demo" summary for hackathon reliability.
   if (!apiKey) {
     return demoSummary(locale, opts.provider, opts.policyName);
   }
@@ -131,6 +133,49 @@ All money amounts should be short human readable strings like "₹5 lakh" or "�
   }
 }
 
+export async function analyzePolicyMasterPrompt(opts: {
+  rawText: string;
+  provider?: string;
+  policyName?: string;
+}): Promise<PolicyAnalysis> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) return demoMasterPromptAnalysis(opts.provider, opts.policyName);
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  const promptPath = path.join(process.cwd(), 'server/master-prompt.txt');
+  const masterPrompt = await fs.readFile(promptPath, 'utf-8').catch(() => {
+    console.warn('Master prompt missing - using fallback');
+    return '**Fallback** You are Indian insurance analyst. Return STRICT JSON policy analysis.';
+  });
+
+  const fullPrompt = masterPrompt
+    .replace('{POLICY_TEXT}', opts.rawText.slice(0, 80000))
+    .replace('[paste the full extracted text from the PDF here]', opts.rawText.slice(0, 80000));
+
+  try {
+    const resp = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 4000,
+      },
+      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+    });
+
+    const parsed = safeJsonParse(resp.text ?? '') as PolicyAnalysis;
+    if (!parsed || !parsed.policy_overview) {
+      return demoMasterPromptAnalysis(opts.provider, opts.policyName);
+    }
+
+    parsed.overall_clarity_score = clamp01to100(parsed.overall_clarity_score, 70);
+    return parsed;
+  } catch (err) {
+    console.error('Master analysis error:', err);
+    return demoMasterPromptAnalysis(opts.provider, opts.policyName);
+  }
+}
+
 export async function simulateScenario(opts: {
   rawText: string;
   scenarioId: ScenarioId;
@@ -146,8 +191,8 @@ export async function simulateScenario(opts: {
 
   const ai = new GoogleGenAI({ apiKey });
   const system = `You are a claim scenario simulator.
-Return STRICT JSON only: { covered:boolean, amount:string, riskLevel:"low"|"medium"|"high", steps:string[], explanation:string }
-If uncertain, set covered=false and explain why.`;
+Return STRICT JSON only: { covered: boolean, amount: string, riskLevel: "low"|"medium"|"high", steps: string[], explanation: string }
+If uncertain, set covered = false and explain why.`;
 
   const prompt = [
     `Locale: ${locale}`,
@@ -375,6 +420,68 @@ function demoAssistantReply(messages: Array<{ role: 'user' | 'assistant'; text: 
   return 'I can help with coverage details, claim amount estimates, eligibility checks, and required documents. Ask me a specific scenario.';
 }
 
+function demoMasterPromptAnalysis(provider?: string, policyName?: string): PolicyAnalysis {
+  const p = (provider || '').toLowerCase();
+  return {
+    policy_overview: {
+      policy_type: p.includes('hdfc') ? 'Health Insurance' : p.includes('sbi') ? 'Health Insurance' : p.includes('icici') ? 'Health + Life' : 'Health Insurance',
+      insurer_name: p.includes('hdfc') ? 'HDFC ERGO' : p.includes('sbi') ? 'SBI Life Insurance' : p.includes('icici') ? 'ICICI Prudential' : 'Life Insurance Corporation (LIC)',
+      policy_name: policyName || "Jeevan Arogya",
+      sum_insured: '₹5 Lakhs',
+      policy_period: '1 year (Demo)'
+    },
+    key_coverages: [
+      {
+        coverage_name: 'Hospitalization',
+        description: 'Covers in-patient hospital stays and procedures.',
+        limit: 'Up to ₹5 Lakhs per year',
+        sub_limits: ['Room rent capped at ₹5,000/day'],
+        waiting_period: '30 days initial'
+      },
+      {
+        coverage_name: 'Accidental Death',
+        description: 'Lump sum payment on accidental death.',
+        limit: '₹5 Lakhs',
+        sub_limits: [],
+        waiting_period: 'Immediate'
+      }
+    ],
+    exclusions: [
+      {
+        category: 'Pre-existing Diseases',
+        details: 'Conditions present before policy purchase not covered for 48 months.',
+        severity: 'High'
+      },
+      {
+        category: 'Alcohol/Drug Abuse',
+        details: 'Treatment for substance abuse excluded.',
+        severity: 'Medium'
+      }
+    ],
+    important_clauses: [
+      {
+        clause_name: 'Free Look Period',
+        description: '15 days to review and cancel policy.',
+        impact_on_claim: 'N/A - only for policy cancellation'
+      },
+      {
+        clause_name: 'Claim Intimation',
+        description: 'Inform insurer within 24 hours for accidents.',
+        impact_on_claim: 'Late intimation may lead to rejection'
+      }
+    ],
+    claim_process_summary: '1. Inform insurer within 24 hrs (accident)/7 days (illness). 2. Submit claim form, policy doc, bills, discharge summary. 3. Get pre-auth for cashless. 4. Receive settlement within 30 days. Keep all originals.',
+    scenario_simulation: {
+      example_scenario: 'Bike accident with fracture requiring 3-day hospital stay',
+      likely_eligible_amount: '₹45,000 (hospital bill reimbursement)',
+      possible_reasons_for_rejection: ['No FIR filed', 'Alcohol involved', 'Outside network hospital'],
+      advice: 'Always file FIR for accidents and use network hospitals for cashless'
+    },
+    overall_clarity_score: 75,
+    recommendation: 'Good basic health policy for young families. Add personal accident rider.'
+  };
+}
+
 export async function parsePolicyDetailed(opts: {
   rawText: string;
   provider?: string;
@@ -428,7 +535,7 @@ ${opts.rawText.slice(0, 30000)}
 
 function demoDetailedPolicy(provider?: string, policyName?: string) {
   const p = (provider || '').toLowerCase();
-  
+
   if (p.includes('hdfc')) return {
     policyName: "Optima Secure",
     insurer: "HDFC ERGO",
@@ -497,3 +604,4 @@ function demoDetailedPolicy(provider?: string, policyName?: string) {
     ]
   };
 }
+

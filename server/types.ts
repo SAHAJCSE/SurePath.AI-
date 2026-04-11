@@ -57,6 +57,50 @@ export type ScenarioResult = {
   explanation: string;
 };
 
+export interface PolicyCoverage {
+  coverage_name: string;
+  description: string;
+  limit: string;
+  sub_limits: string[];
+  waiting_period: string;
+}
+
+export interface PolicyExclusion {
+  category: string;
+  details: string;
+  severity: 'High' | 'Medium' | 'Low';
+}
+
+export interface ImportantClause {
+  clause_name: string;
+  description: string;
+  impact_on_claim: string;
+}
+
+export interface ScenarioSimulation {
+  example_scenario: string;
+  likely_eligible_amount: string;
+  possible_reasons_for_rejection: string[];
+  advice: string;
+}
+
+export interface PolicyAnalysis {
+  policy_overview: {
+    policy_type: string;
+    insurer_name: string;
+    policy_name: string;
+    sum_insured: string | number;
+    policy_period: string;
+  };
+  key_coverages: PolicyCoverage[];
+  exclusions: PolicyExclusion[];
+  important_clauses: ImportantClause[];
+  claim_process_summary: string;
+  scenario_simulation: ScenarioSimulation;
+  overall_clarity_score: number;
+  recommendation: string;
+}
+
 export type StoredPolicy = {
   policyId: string;
   uploadedAt: number;
@@ -64,5 +108,16 @@ export type StoredPolicy = {
   mimeType?: string;
   rawText: string;
   lastSummary?: SmartSummary;
+  lastAnalysis?: PolicyAnalysis;
+};
+
+export type StoredPolicy = {
+  policyId: string;
+  uploadedAt: number;
+  filename?: string;
+  mimeType?: string;
+  rawText: string;
+  lastSummary?: SmartSummary;
+  lastAnalysis?: PolicyAnalysis;
 };
 
