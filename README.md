@@ -130,6 +130,7 @@ Students from Chitkara University (CSE) building SurePath AI.
 <hr/>
 
 <div align="center" style="font-size:16px;">
-  Built with ❤️ to make insurance simple and transparent.
+  Built with ❤️ to make insurance simple and transparent. ❤️
 </div>
+
 
