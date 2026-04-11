@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle } from 'lucide-react';
-import { Screen } from './types';
-import { Header } from './components/Header';
-import { BottomNav } from './components/BottomNav';
+import { Screen } from './types/index';
+import { Header } from './components/layout/Header';
+import { BottomNav } from './components/layout/BottomNav';
 import { HomeScreen } from './screens/HomeScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
 import { CoverageScreen } from './screens/CoverageScreen';
@@ -14,7 +14,7 @@ import { ProviderSelection } from './screens/ProviderSelection';
 import { PolicyVerification } from './screens/PolicyVerification';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { ProfileFormScreen } from './screens/ProfileFormScreen';
-import { TranslationConsent } from './components/TranslationConsent';
+import { TranslationConsent } from './components/layout/TranslationConsent';
 
 // --- Components ---
 

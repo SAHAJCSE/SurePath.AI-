@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart2, ShieldCheck, Calculator, User, Home } from 'lucide-react';
-import { Screen } from '../types';
+import { Screen } from '../../types/index';
 
 export const BottomNav = ({ activeScreen, setScreen }: { activeScreen: Screen, setScreen: (s: Screen) => void }) => {
   const navItems = [
