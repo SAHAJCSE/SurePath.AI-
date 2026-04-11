@@ -1,136 +1,97 @@
 <div align="center">
+  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV9yVn2Oa2ZjA1eglpBipuHrkUufp3AWRbCKeXDq8KTYARukLLzjTuC1kwzm2nzCqFm8ttH5ieV6RewqiAuFQRkZE2ebh4xiv5Lr6yVCJ8W7WkxBJ48uBn8PD0ROo9Ywoz4L6evxGNjalb3ulxew3y6vwoDub7U1kSjqGi03qthcE1UadlLiz2VnNrCQUz9tObkq6Pr-Xc3MTjwIB_wggnzb5-7VPISV87OhkOsl6pY9wKfjdQffctz0bd9Kl5uwtfotjlQA6rozEn" alt="SurePath AI Logo" width="120" />
   
   # SurePath AI
-  ### "Your Policy, Deciphered."
+  ### Enterprise-Grade Intelligence for Insurance Policy Analysis
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![React](https://img.shields.io/badge/Frontend-React%2019-blue?logo=react)](https://reactjs.org/)
-  [![Node.js](https://img.shields.io/badge/Backend-Node.js%20Express-green?logo=node.js)](https://nodejs.org/)
-  [![Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-orange?logo=google-gemini)](https://ai.google.dev/)
+  [![Frontend](https://img.shields.io/badge/Frontend-React%2019-blue?logo=react)](https://reactjs.org/)
+  [![Backend](https://img.shields.io/badge/Backend-Node.js%20(Express)-green?logo=node.js)](https://nodejs.org/)
+  [![AI Engine](https://img.shields.io/badge/Engine-Gemini%202.0%20Flash-orange?logo=google-cloud)](https://ai.google.dev/)
+  [![Build](https://img.shields.io/badge/Build-Vite-purple?logo=vite)](https://vitejs.dev/)
 </div>
 
 ---
 
-<div align="center">   <b> <a href="https://sure-path-ai10x.vercel.app/"> CLICK HERE TO SEE THE APP</a></b></div>
+<div align="center">
+  <b><a href="https://sure-path-ai10x.vercel.app/">View Live Application Environment</a></b>
+</div>
 
-## 📋 Problem Statement
+## 📌 Executive Summary
 
-Insurance policies are notoriously complex. Filled with dense "legalese" and hidden clauses, most policyholders don't fully understand what they are covered for until they face a crisis. This complexity leads to:
-- **Unexpected Claim Rejections** due to unknown exclusions.
-- **Confusion** over waiting periods and claim conditions.
-- **Accessibility Barriers** for non-native English speakers.
+The insurance sector is characterized by dense, complex documentation that historically alienates the end consumer. **SurePath AI** addresses this systemic asymmetry by serving as a localized, AI-driven extraction and intelligence layer. It transforms high-density "legalese" into deterministic, structured data objects that power an intuitive, real-time user dashboard. 
 
-## 🚀 Solution Overview
+Built with enterprise scalability in mind, SurePath AI bridges the computational divide between non-structured legal formats (PDFs) and strict analytical visualization (Recharts), delivering actionable policy metrics—such as deterministic limits, explicit exclusions, and automated claim scenario simulations—in seconds.
 
-**SurePath AI** is an intelligent insurance companion designed to bridge the gap between complex legal documents and clear, actionable knowledge.
+## 🚀 System Architecture & Capabilities
 
-### Key Features:
-- **🛡️ AI Policy Decipher**: Upload any insurance PDF/Text → **Gemini 2.0 Flash** master prompt delivers production-ready structured JSON (coverages, exclusions, claim process, scenario simulation).
-- **📊 Coverage Visualizer**: Interactive Recharts maps extracted sum insured/limits from AI analysis.
-- **🚫 Exclusions Highlighter**: Severity-ranked exclusions (High/Medium/Low) from policy text.
-- **🔮 Scenario Simulator**: Real-world tests using policy-specific logic.
-- **💬 Smart Assistant**: Context-aware chat powered by uploaded policy document.
-- **🇮🇳 Hinglish Support**: IRDAI-optimized prompts for Indian users.
-- **🏁 Demo Mode**: Realistic JSON without API key.
+SurePath AI implements a strict client-server decoupling with advanced Natural Language Processing (NLP) injected via Google's Gemini 2.0 construct.
 
-**Technical Innovation**: Custom master prompt for Gemini 2.0 Flash enables accurate, hallucination-free extraction of Indian insurance policies (LIC health, HDFC motor, etc.).
+- **Deterministic Data Extraction:** Utilizes a highly constrained Master Prompt pipeline to force Gemini to extract PDF metadata strictly matching defined Typescript schemas, effectively neutralizing LLM hallucination risks.
+- **Dynamic Recharts Data-Binding:** Real-time integration mapping generated JSON arrays to pie charts and bar configurations, cleanly splitting sub-limits into accessible UI elements.
+- **Client-Side Simulation Engine:** Rather than relying on static mockups, the simulation engine calculates financial exposure based on real-time coverage boundaries and copay restrictions extracted natively from the document.
+- **Frontend Fallback Resiliency:** Engineered with automated offline-fallback patterns. If backend communication severs during PDF transmission, the interface intelligently auto-maps to predefined deterministic mock payloads (e.g. `Jeevan Shagun`) minimizing catastrophic UX crashes.
+- **Browser-Level Programmatic I18n:** Automated Hindi translations powered by explicit DOM manipulators interacting directly with the Google Translate programmatic API.
 
-## 🛠️ Tech Stack
+## 🛠️ Technological Infrastructure
 
-### Frontend
-- **React 19**: Modern UI component architecture.
-- **Tailwind CSS (Vite)**: For a sleek, responsive design system.
-- **Framer Motion**: Premium micro-animations and screen transitions.
-- **Lucide React**: High-quality iconography.
+### Client Application (Frontend)
+- **Framework:** React 19 optimized with Vite for Rapid Hot Module Replacement (HMR).
+- **Styling:** Fully bespoke Vanilla Tailwind CSS implementation focusing on modern glassmorphism, responsive constraint layouts, and semantic design tokens.
+- **Animation Layer:** Framer Motion (v12) deployed for lifecycle state handling (`AnimatePresence`) and premium micro-interactions.
+- **Data Visualization:** Recharts integration for responsive SVGs driven directly by AI payloads.
 
-### Backend
-- **Node.js & Express**: Scalable API handling.
-- **Multer**: Secure file upload processing.
-- **Google Generative AI (Gemini 2.0 Flash)**: State-of-the-art LLM for document extraction and natural language chat.
+### Server Application (Backend)
+- **Runtime:** Node.js encapsulated by the Express micro-framework.
+- **Parsing Engine:** `pdf-parse` combined with custom regex text normalization algorithms.
+- **AI Integration:** `@google/genai` executing strict parameterized extraction commands.
+- **Concurrency:** `concurrently` enabling isolated thread processes during local development.
 
 ---
 
-## ⚙️ Installation & Local Setup
+## ⚙️ Development Environment Setup
 
-Follow these steps to get SurePath AI running on your local machine.
+Ensure your local machine operates on **Node.js (v18+)** and that you possess a valid [Gemini API Key](https://aistudio.google.com/app/apikey).
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- A [Gemini API Key](https://aistudio.google.com/app/apikey)
-
-### 1. Clone the repository
+### 1. Repository Initializations
 ```bash
 git clone https://github.com/SAHAJCSE/SurePath.AI-.git
 cd surepath.ai
 ```
 
-### 2. Install Dependencies
+### 2. Dependency Resolution
 ```bash
+# Resolve all multi-environment dependencies securely
 npm install
 ```
 
-### 3. Configure Environment Variables
-Create a `.env` file in the root directory and add your API Key:
+### 3. Environment Context
+Establish the runtime secrets at the primary application root (`.env`):
 ```env
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_secured_gemini_api_key_here
+VITE_API_BASE=http://localhost:5050
 PORT=5050
 ```
 
-### 4. Run the Application
-You can run both the frontend and the backend server simultaneously with a single command:
-
+### 4. Concurrent Bootstrapping
+Execute the initialization script to boot both the React client and the Express backend simultaneously.
 ```bash
 npm run dev:full
 ```
-
-The application will be available at `http://localhost:3000`.
-
-The application will be available at `http://localhost:3000`.
+*The local development proxy is configured for routing via `http://localhost:3000`.*
 
 ---
 
-## 🤝 Contributing
+## 💡 Code Standards & Contributing
 
-Students from Chitkara University (CSE) building SurePath AI.
-
-## 👥 Team
-
-<div align="center">
-
-<h3>Students from Chitkara University (CSE) building <b>SurePath AI</b></h3>
-
-</div>
+This codebase operates under strict Typescript checking and ESLint linting constraints (`npm run lint`).
+When contributing, ensure:
+1. No explicit generic typing (`any`) is merged into deterministic schemas.
+2. Changes to API routing must properly handle Cross-Origin Resource Sharing (CORS) exceptions.
+3. Keep user interface components functionally pure unless fetching state explicitly through bounded Custom Hooks (`usePolicy.ts`).
 
 <br/>
 
-<div style="font-size:18px; line-height:1.8;">
-
-<ul>
-  <li><b>🚀 Sahaj (Lead & Full Stack)</b><br/>
-  Architecture, frontend, API integration, chatbot flow</li>
-
-  <br/>
-
-  <li><b>🎨 Vrinda (Frontend & UI/UX)</b><br/>
-  Design, responsive UI, user experience</li>
-
-  <br/>
-
-  <li><b>⚙️ Rajeev Ranjan (Backend)</b><br/>
-  APIs, server logic, file handling</li>
-
-  <br/>
-
-  <li><b>🤖 Miljot Singh (AI & Testing)</b><br/>
-  Gemini integration, prompt engineering, testing</li>
-</ul>
-
+<div align="center" style="font-size:14px; opacity:0.8;">
+  Built with ❤️ to enforce clarity, transparency, and computational intelligence in the modern insurance domain. ❤️
 </div>
-
-<hr/>
-
-<div align="center" style="font-size:16px;">
-  Built with ❤️ to make insurance simple and transparent. ❤️
-</div>
-
-
