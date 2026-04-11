@@ -4,6 +4,13 @@ export interface ParsedPolicy {
   policyName: string;
   insurer: string;
   totalSumInsured: number;
+  coverage?: {
+    totalCoverage?: number;
+    accidentalCoverage?: number;
+    naturalDeath?: number;
+    hospitalization?: number;
+    criticalIllness?: number;
+  };
   coverages: { name: string; amount: number | string; unit: string; isCovered: boolean; }[];
   exclusions: { title: string; description: string; severity: 'high' | 'medium' | 'low'; }[];
   generalConditions: string[];
@@ -11,29 +18,33 @@ export interface ParsedPolicy {
 
 export const samplePolicies: { [key: string]: ParsedPolicy } = {
   lic: {
-    policyName: "Jeevan Arogya",
-    insurer: "Life Insurance Corporation (LIC)",
+    policyName: "Jeevan Shagun",
+    insurer: "LIC",
     totalSumInsured: 500000,
+    coverage: {
+      totalCoverage: 500000,
+      accidentalCoverage: 500000,
+      naturalDeath: 500000,
+      hospitalization: 500000,
+      criticalIllness: 0
+    },
     coverages: [
-      { name: "Hospital Cash Benefit", amount: 2000, unit: "₹/day", isCovered: true },
-      { name: "Major Surgical Benefit", amount: 500000, unit: "₹", isCovered: true },
-      { name: "Day Care Procedure Benefit", amount: 10000, unit: "₹", isCovered: true },
-      { name: "Ambulance Benefit", amount: 1000, unit: "₹", isCovered: true },
-      { name: "Medical Management (Dengue/Malaria)", amount: 5000, unit: "₹", isCovered: true },
-      { name: "Pre-existing Diseases", amount: 0, unit: "₹", isCovered: false }
+      { name: "Hospitalization", amount: 500000, unit: "₹", isCovered: true },
+      { name: "Pre/Post Hospitalization", amount: "Covered", unit: "", isCovered: true },
+      { name: "Day Care Procedures", amount: 140, unit: "Procedures", isCovered: true },
+      { name: "Ambulance", amount: 1000, unit: "₹", isCovered: true },
+      { name: "Critical Illness", amount: 0, unit: "₹", isCovered: false }
     ],
     exclusions: [
-      { title: "Pre-existing Diseases", description: "Conditions existing before policy purchase are not covered for the first 48 months.", severity: "high" },
-      { title: "Epidemic Diseases", description: "Diseases declared as epidemic by government may be partially covered.", severity: "high" },
-      { title: "Cosmetic/Plastic Surgery", description: "Surgery for cosmetic purposes is excluded.", severity: "medium" },
-      { title: "Self-Inflicted Injuries", description: "Injuries from self-harm or suicide attempts are not covered.", severity: "high" },
-      { title: "Substance Abuse", description: "Treatment related to alcohol or drug abuse is excluded.", severity: "medium" }
+      { title: "Pre-existing Conditions", description: "Not covered for first 48 months", severity: "high" },
+      { title: "Hazardous Sports", description: "Injuries arising from hazardous sports", severity: "medium" },
+      { title: "Substance Abuse", description: "Treatment for substance abuse", severity: "high" }
     ],
     generalConditions: [
-      "30-day initial waiting period for illnesses.",
-      "2-year waiting period for specific diseases.",
-      "48-month waiting period for pre-existing conditions.",
-      "Policy can be taken for self, spouse, children, and parents."
+      "Good base coverage for hospitalization.",
+      "Consider adding a critical illness rider.",
+      "Room rent capping might lead to higher out-of-pocket expenses for premium hospitals.",
+      "Inform insurer within 24 hours. Submit all documents within 15 days of discharge."
     ]
   },
   hdfc: {
