@@ -60,6 +60,13 @@ export default function App() {
     setLocale(targetLocale);
     localStorage.setItem('surepath_locale', targetLocale);
     document.documentElement.lang = targetLocale;
+    
+    // Trigger actual Google Translate dropdown
+    const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (select) {
+      select.value = targetLocale;
+      select.dispatchEvent(new Event('change'));
+    }
   };
 
   const toggleLanguage = () => {

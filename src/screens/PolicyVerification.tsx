@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck, User, ArrowRight, Headphones, BadgeCheck, Calendar, Zap, Loader2, AlertCircle } from 'lucide-react';
 
 export const PolicyVerification = ({ onVerify }: { onVerify: () => void }) => {
-  const [policyNumber, setPolicyNumber] = useState('');
-  const [fullName, setFullName] = useState('');
+  const isDemo = localStorage.getItem('surepath_demo_mode') === 'demo' || localStorage.getItem('surepath_policy_id') === 'demo-policy-id';
+  
+  const [policyNumber, setPolicyNumber] = useState(isDemo ? 'LIC-JS-12345' : '');
+  const [fullName, setFullName] = useState(isDemo ? 'Arjun Sharma' : '');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
