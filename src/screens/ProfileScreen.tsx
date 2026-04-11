@@ -1,6 +1,6 @@
-import { useRef } from 'react';
-import { motion } from 'motion/react';
-import { ShieldCheck, User, ChevronRight, FileText, LogOut, Shield, History, HelpCircle, Headphones, ScanFace, Verified, Settings } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ShieldCheck, User, ChevronRight, FileText, LogOut, Shield, History, HelpCircle, Headphones, Verified, Settings, Mail, Phone, MessageSquare, ExternalLink } from 'lucide-react';
 
 type ProfileForm = {
   firstName: string;
@@ -22,6 +22,7 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
   const profileInfoRef = useRef<HTMLDivElement | null>(null);
   const documentsRef = useRef<HTMLDivElement | null>(null);
   const stored = getStoredProfile();
+  const [expanded, setExpanded] = useState<string | null>(null);
   
   const firstName = stored?.form?.firstName || 'Alexander';
   const lastName = stored?.form?.lastName || 'Sterling';
@@ -89,7 +90,10 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
       <h3 className="px-8 mb-2 text-xs font-semibold text-on-surface-variant uppercase tracking-widest">Insurance</h3>
     </div>
     <div className="mx-4 mb-6 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm">
-      <button className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors">
+      <button 
+        onClick={() => setExpanded(expanded === 'policies' ? null : 'policies')}
+        className="w-full flex items-center justify-between px-4 py-4 active:bg-surface-container-low transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-secondary-container/20 text-secondary flex items-center justify-center">
             <Shield size={20} />
@@ -98,37 +102,67 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold">2 Active</span>
-          <ChevronRight size={20} className="text-outline-variant" />
+          <ChevronRight size={20} className={`text-outline-variant transition-transform ${expanded === 'policies' ? 'rotate-90' : ''}`} />
         </div>
       </button>
+
+      <AnimatePresence>
+        {expanded === 'policies' && (
+          <motion.div 
+            initial={{ height: 0 }} 
+            animate={{ height: 'auto' }} 
+            exit={{ height: 0 }} 
+            className="overflow-hidden bg-surface-container-low"
+          >
+            <div className="p-4 space-y-3 border-t border-outline-variant/10">
+              <div className="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
+                <p className="text-xs font-bold text-primary">HDFC ERGO Optima Secure</p>
+                <p className="text-[10px] text-on-surface-variant">Sum Insured: ₹10,00,000</p>
+              </div>
+              <div className="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
+                <p className="text-xs font-bold text-primary">LIC Jeevan Arogya</p>
+                <p className="text-[10px] text-on-surface-variant">Sum Insured: ₹5,00,000</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="ml-14 border-b border-outline-variant/10" />
-      <button className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors">
+
+      <button 
+        onClick={() => setExpanded(expanded === 'claims' ? null : 'claims')}
+        className="w-full flex items-center justify-between px-4 py-4 active:bg-surface-container-low transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-secondary-container/20 text-secondary flex items-center justify-center">
             <History size={20} />
           </div>
           <span className="font-medium">Claim History</span>
         </div>
-        <ChevronRight size={20} className="text-outline-variant" />
+        <ChevronRight size={20} className={`text-outline-variant transition-transform ${expanded === 'claims' ? 'rotate-90' : ''}`} />
       </button>
+
+      <AnimatePresence>
+        {expanded === 'claims' && (
+          <motion.div 
+            initial={{ height: 0 }} 
+            animate={{ height: 'auto' }} 
+            exit={{ height: 0 }} 
+            className="overflow-hidden bg-surface-container-low"
+          >
+            <div className="p-8 text-center border-t border-outline-variant/10">
+              <History className="mx-auto text-outline-variant mb-2" size={32} />
+              <p className="text-sm font-medium text-on-surface-variant italic">No claims filed yet.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
 
     <h3 className="px-8 mb-2 text-xs font-semibold text-on-surface-variant uppercase tracking-widest">Security</h3>
     <div className="mx-4 mb-6 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm">
-      <div className="flex items-center justify-between px-4 py-3 transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
-            <ScanFace size={20} />
-          </div>
-          <span className="font-medium">Face ID</span>
-        </div>
-        <div className="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" className="sr-only peer" defaultChecked />
-          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-        </div>
-      </div>
-      <div className="ml-14 border-b border-outline-variant/10" />
-      <button className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors">
+      <div className="w-full flex items-center justify-between px-4 py-4 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
             <ShieldCheck size={20} />
@@ -136,32 +170,92 @@ export const ProfileScreen = ({ onEdit }: { onEdit: () => void }) => {
           <span className="font-medium">Data Shield Status</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-tertiary font-semibold text-sm">Active</span>
-          <ChevronRight size={20} className="text-outline-variant" />
+          <span className="text-tertiary font-bold text-sm tracking-wide">ACTIVE</span>
+          <Verified size={16} className="text-tertiary" fill="currentColor" />
         </div>
-      </button>
+      </div>
     </div>
 
     <div className="mx-4 mb-6 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm">
-      <button className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors">
+      <button 
+        onClick={() => setExpanded(expanded === 'help' ? null : 'help')}
+        className="w-full flex items-center justify-between px-4 py-4 active:bg-surface-container-low transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
             <HelpCircle size={20} />
           </div>
           <span className="font-medium">Help Center</span>
         </div>
-        <ChevronRight size={20} className="text-outline-variant" />
+        <ChevronRight size={20} className={`text-outline-variant transition-transform ${expanded === 'help' ? 'rotate-90' : ''}`} />
       </button>
+
+      <AnimatePresence>
+        {expanded === 'help' && (
+          <motion.div 
+            initial={{ height: 0 }} 
+            animate={{ height: 'auto' }} 
+            exit={{ height: 0 }} 
+            className="overflow-hidden bg-surface-container-low"
+          >
+            <div className="p-4 space-y-2 border-t border-outline-variant/10">
+              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
+                <span>How to file a claim?</span>
+                <ExternalLink size={14} className="text-outline-variant" />
+              </a>
+              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
+                <span>Coverage Guide</span>
+                <ExternalLink size={14} className="text-outline-variant" />
+              </a>
+              <a href="#" className="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl text-xs font-bold text-on-surface">
+                <span>Network Hospital List</span>
+                <ExternalLink size={14} className="text-outline-variant" />
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="ml-14 border-b border-outline-variant/10" />
-      <button className="w-full flex items-center justify-between px-4 py-3 active:bg-surface-container-low transition-colors">
+
+      <button 
+        onClick={() => setExpanded(expanded === 'concierge' ? null : 'concierge')}
+        className="w-full flex items-center justify-between px-4 py-4 active:bg-surface-container-low transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
             <Headphones size={20} />
           </div>
           <span className="font-medium">Contact Concierge</span>
         </div>
-        <ChevronRight size={20} className="text-outline-variant" />
+        <ChevronRight size={20} className={`text-outline-variant transition-transform ${expanded === 'concierge' ? 'rotate-90' : ''}`} />
       </button>
+
+      <AnimatePresence>
+        {expanded === 'concierge' && (
+          <motion.div 
+            initial={{ height: 0 }} 
+            animate={{ height: 'auto' }} 
+            exit={{ height: 0 }} 
+            className="overflow-hidden bg-surface-container-low"
+          >
+            <div className="p-4 space-y-3 border-t border-outline-variant/10">
+              <div className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                <Phone size={16} className="text-primary" />
+                <span className="text-xs font-bold">+91 1800-410-SHIELD</span>
+              </div>
+              <button className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-on-primary rounded-xl text-xs font-bold">
+                <MessageSquare size={16} />
+                <span>Start Live Chat</span>
+              </button>
+              <div className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl">
+                <Mail size={16} className="text-primary" />
+                <span className="text-xs font-bold">support@surepath.ai</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
 
     <div ref={documentsRef} className="mx-4 mb-6 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm">
