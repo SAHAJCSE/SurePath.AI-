@@ -29,6 +29,12 @@ export const SummaryScreen = () => {
     );
   }
 
+  const handleOpenMaps = (query?: string) => {
+    const defaultQuery = `network hospitals for ${policy?.insurer || 'insurance'} near Banur, Punjab`;
+    const searchQuery = encodeURIComponent(query || defaultQuery);
+    window.open(`https://www.google.com/maps/search/${searchQuery}`, '_blank');
+  };
+
   if (error || !policy) {
     return (
       <div className="pt-24 px-6 text-center">
@@ -204,18 +210,27 @@ export const SummaryScreen = () => {
               </div>
 
               <div className="space-y-3">
-                 <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5">
-                    <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                 <button 
+                  onClick={() => handleOpenMaps('Ivy Hospital Banur')}
+                  className="w-full flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors text-left"
+                 >
+                    <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
                     <span className="text-xs font-bold text-white/80 italic">Ivy Hospital - 8.2km</span>
-                 </div>
-                 <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5">
-                    <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                 </button>
+                 <button 
+                  onClick={() => handleOpenMaps('Fortis Mohali')}
+                  className="w-full flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors text-left"
+                 >
+                    <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
                     <span className="text-xs font-bold text-white/80 italic">Fortis Mohali - 14.5km</span>
-                 </div>
+                 </button>
               </div>
            </div>
-
-           <button className="w-full mt-10 h-16 bg-primary text-on-primary rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-container transition-all shadow-xl shadow-primary/20 border border-primary/20">
+ 
+           <button 
+             onClick={() => handleOpenMaps()}
+             className="w-full mt-10 h-16 bg-primary text-on-primary rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-container transition-all shadow-xl shadow-primary/20 border border-primary/20"
+           >
               Find Near Me
               <ArrowRight size={20} />
            </button>
