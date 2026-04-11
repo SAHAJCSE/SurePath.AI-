@@ -17,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { ParsedPolicy } from '../../types/policy';
+import { API_BASE } from '../../config';
 
 interface Props {
   policy: ParsedPolicy;
@@ -51,58 +52,40 @@ export default function ScenarioSimulator({ policy }: Props) {
     advice: string[];
   }>(null);
 
-  const handleSimulate = () => {
+  const handleSimulate = async () => {
     setLoading(true);
     setResult(null);
 
-    setTimeout(() => {
-      const condition = CONDITIONS.find(c => c.id === conditionId) || CONDITIONS[0];
-      const totalBill = expectedBill;
-      
-      // Calculation Logic
-      let coverageBase = totalBill * 0.9; // Base coverage is 90% of bill
-      
-      // Adjustments
-      if (hospitalType === 'Non-Network') coverageBase *= 0.8; // Lower payout for non-network
-      if (cityTier === 'Tier-1') coverageBase *= 0.95; // Capping/Higher deductions in Tier 1
-      if (age > 60) coverageBase *= 0.85; // Age co-pay
+    const condition = CONDITIONS.find(c => c.id === conditionId) || CONDITIONS[0];
+    const totalBill = expectedBill;
 
-      // Final values
-      const sumInsuredLimit = policy.totalSumInsured || 500000;
-      const estimatedPayout = Math.min(coverageBase, sumInsuredLimit);
-      const deductible = totalBill * 0.05 + (hospitalType === 'Non-Network' ? totalBill * 0.1 : 0);
-      const outOfPocket = Math.max(0, totalBill - estimatedPayout - (totalBill * 0.02)); // remaining + misc
-
-      const coverageRatio = estimatedPayout / totalBill;
-      let probability: 'High' | 'Medium' | 'Low' = 'High';
-      let probPercent = 95;
-
-      if (coverageRatio < 0.6) {
-        probability = 'Low';
-        probPercent = 35;
-      } else if (coverageRatio < 0.85) {
-        probability = 'Medium';
-        probPercent = 65;
-      }
-
-      setResult({
-        estimatedPayout,
-        probability,
-        probPercent,
-        totalBill,
-        deductible,
-        outOfPocket,
-        risks: [
-          hospitalType === 'Non-Network' ? 'Non-Network hospitals have 20% co-pay.' : 'Room rent cap might apply for luxury rooms.',
-          age > 60 ? 'Senior citizen co-payment clause detected.' : 'Non-medical expenses (PPE, etc.) are usually excluded.'
-        ],
-        advice: [
-          hospitalType === 'Non-Network' ? 'Switch to a Network Hospital to save ₹' + (totalBill * 0.15).toLocaleString() : 'Stay in a shared room to avoid room-rent capping.',
-          'Consider a Top-up plan if you expect more high-value treatments.'
-        ]
+    try {
+      const res = await fetch(`${API_BASE}/api/simulate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          policyData: policy,
+          scenario: {
+            hospitalBill: totalBill,
+            accident: condition.id === 'accident',
+            hospitalType,
+            cityTier,
+            age
+          }
+        })
       });
+
+      if (!res.ok) throw new Error('Simulation API failed');
+      const data = await res.json();
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      alert('Simulation failed. Please try again or fallback to standard estimation.');
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   return (

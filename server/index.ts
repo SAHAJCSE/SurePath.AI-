@@ -4,8 +4,10 @@ import cors from 'cors';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
 import { extractTextFromUpload, normalizeText } from './text-extract';
-import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed, analyzePolicyMasterPrompt } from './gemini';
+import { assistantChat, generateSmartSummary, parsePolicyDetailed, analyzePolicyMasterPrompt } from './gemini';
 import { getPolicy, putPolicy, updatePolicy } from './storage';
+import { validatePolicy } from './validator';
+import { simulate } from './simulator';
 import type { ScenarioRequest } from './types';
 
 const app = express();
@@ -142,6 +144,8 @@ app.post('/api/analyze-policy', async (req, res) => {
       policyName,
     });
 
+    validatePolicy(analysis);
+
     // Cache in storage
     if (policyId) {
       updatePolicy(policyId, { lastAnalysis: analysis });
@@ -187,27 +191,16 @@ app.post('/api/policy/parse', async (req, res) => {
  */
 app.post('/api/simulate', async (req, res) => {
   try {
-    const body = (req.body ?? {}) as ScenarioRequest;
-    if (!body.policyId || typeof body.policyId !== 'string') {
-      return res.status(400).json({ error: 'policyId is required.' });
-    }
-    if (!body.scenarioId || typeof body.scenarioId !== 'string') {
-      return res.status(400).json({ error: 'scenarioId is required.' });
-    }
+    const { policyData, scenario } = req.body ?? {};
 
-    const policy = getPolicy(body.policyId);
-    if (!policy) {
-      return res.status(404).json({ error: 'Policy not found. Upload first.' });
+    if (policyData && scenario) {
+      // New deterministic simulation engine
+      const result = simulate(policyData, scenario);
+      return res.json(result);
     }
-
-    const result = await simulateScenario({
-      rawText: policy.rawText,
-      scenarioId: body.scenarioId as any,
-      locale: body.locale,
-      notes: body.notes,
-    });
-
-    res.json({ policyId: body.policyId, scenarioId: body.scenarioId, result });
+    
+    // Fallback for legacy calls (if any)
+    return res.status(400).json({ error: 'policyData and scenario required.' });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Simulation failed.' });
   }
