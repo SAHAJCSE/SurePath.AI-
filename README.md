@@ -11,6 +11,8 @@
 
 ---
 
+<div align="center">   <b> <a href="https://sure-path-ai10x.vercel.app/"> CLICK HERE TO SEE THE APP</a></b></div>
+
 ## 📋 Problem Statement
 
 Insurance policies are notoriously complex. Filled with dense "legalese" and hidden clauses, most policyholders don't fully understand what they are covered for until they face a crisis. This complexity leads to:
