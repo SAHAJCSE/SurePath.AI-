@@ -4,19 +4,27 @@ import { API_BASE } from '../config';
 import { samplePolicies } from '../data/samplePolicies';
 
 export function usePolicy() {
-  const [policy, setPolicy] = useState<ParsedPolicy | null>(null);
+  const [policyData, setPolicyData] = useState<ParsedPolicy | null>(null);
+  const [demoPolicyData, setDemoPolicyData] = useState<ParsedPolicy | null>(null);
+  const [mode, setMode] = useState<'demo' | 'real'>(
+     (localStorage.getItem('surepath_demo_mode') as 'demo' | 'real') || 'real'
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPolicy() {
-      const policyId = localStorage.getItem('surepath_policy_id');
       const rawProvider = localStorage.getItem('surepath_selected_provider') || 'lic';
       const provider = rawProvider.toLowerCase().split(' ')[0]; // 'HDFC Life' -> 'hdfc'
 
+      // Pre-load demo data so it's always ready
+      setDemoPolicyData((samplePolicies['hdfc'] as any) || samplePolicies['lic']);
+
+      const policyId = localStorage.getItem('surepath_policy_id');
+
       // Fallback to sample data if no policyId or if it's a demo
       if (!policyId || policyId === 'demo-policy-id') {
-        setPolicy(samplePolicies[provider] || samplePolicies['lic']);
+        setPolicyData((samplePolicies[provider] as any) || samplePolicies['lic']);
         return;
       }
 
@@ -52,20 +60,37 @@ export function usePolicy() {
           })) : []
         };
         
-        setPolicy(mappedPolicy);
+        setPolicyData(mappedPolicy);
       } catch (err: any) {
         console.error('Fetch error, falling back to LIC data:', err);
         // Fallback to default LIC data on fetch failure
-        setPolicy(samplePolicies[provider] || samplePolicies['lic'] as any);
+        setPolicyData((samplePolicies[provider] as any) || samplePolicies['lic']);
         // We don't set error here because we are providing a fallback
       } finally {
         setLoading(false);
       }
     }
-
     fetchPolicy();
+  }, [mode]);
+
+  useEffect(() => {
+    const handleModeChange = () => {
+       const newMode = (localStorage.getItem('surepath_demo_mode') as 'demo' | 'real') || 'real';
+       setMode(newMode);
+    };
+    window.addEventListener('surepath_mode_toggle', handleModeChange);
+    return () => window.removeEventListener('surepath_mode_toggle', handleModeChange);
   }, []);
 
-  return { policy, loading, error };
+  const toggleDemoMode = (enableDemo: boolean) => {
+    const newMode = enableDemo ? 'demo' : 'real';
+    setMode(newMode);
+    localStorage.setItem('surepath_demo_mode', newMode);
+    window.dispatchEvent(new Event('surepath_mode_toggle'));
+  };
+
+  const activePolicy = mode === 'demo' ? demoPolicyData : policyData;
+
+  return { policy: activePolicy, loading: mode === 'demo' ? false : loading, error: mode === 'demo' ? null : error, mode, toggleDemoMode };
 }
 
