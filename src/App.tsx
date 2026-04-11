@@ -41,7 +41,15 @@ import { TranslationConsent } from './components/TranslationConsent';
 // --- Main App ---
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home');
+  const [screen, setScreen] = useState<Screen>(() => {
+    return (localStorage.getItem('surepath_active_screen') as Screen) || 'home';
+  });
+  
+  const handleSetScreen = (newScreen: Screen) => {
+    setScreen(newScreen);
+    localStorage.setItem('surepath_active_screen', newScreen);
+  };
+
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [showConsent, setShowConsent] = useState(false);
   const [locale, setLocale] = useState<'en' | 'hi'>(() => {
@@ -114,7 +122,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         {screen === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <HomeScreen onStart={() => setScreen('provider')} />
+            <HomeScreen onStart={() => handleSetScreen('provider')} />
           </motion.div>
         )}
         {screen === 'provider' && (
@@ -122,14 +130,14 @@ export default function App() {
             <ProviderSelection
               onSelect={(provider) => {
                 setSelectedProvider(provider);
-                setScreen('verification');
+                handleSetScreen('verification');
               }}
             />
           </motion.div>
         )}
         {screen === 'verification' && (
           <motion.div key="verification" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <PolicyVerification onVerify={() => setScreen('summary')} />
+            <PolicyVerification onVerify={() => handleSetScreen('summary')} />
           </motion.div>
         )}
         {screen === 'summary' && (
@@ -150,14 +158,14 @@ export default function App() {
         {screen === 'profile' && (
           <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ProfileScreen 
-              onEdit={() => setScreen('profile_form')} 
-              onHelp={() => setScreen('assistant')}
+              onEdit={() => handleSetScreen('profile_form')} 
+              onHelp={() => handleSetScreen('assistant')}
             />
           </motion.div>
         )}
         {screen === 'profile_form' && (
           <motion.div key="profile_form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ProfileFormScreen onSaved={() => setScreen('profile')} />
+            <ProfileFormScreen onSaved={() => handleSetScreen('profile')} />
           </motion.div>
         )}
         {screen === 'assistant' && (
@@ -167,10 +175,10 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <BottomNav activeScreen={screen} setScreen={setScreen} />
+      {screen !== 'home' && screen !== 'verification' && <BottomNav activeScreen={screen} setScreen={handleSetScreen} />}
       {screen !== 'assistant' && (
         <button
-          onClick={() => setScreen('assistant')}
+          onClick={() => handleSetScreen('assistant')}
           className="fixed bottom-28 left-4 z-50 w-14 h-14 rounded-full bg-primary text-on-primary shadow-xl flex items-center justify-center active:scale-95"
           aria-label="Open AI assistant"
         >
