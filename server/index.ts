@@ -4,7 +4,7 @@ import cors from 'cors';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
 import { extractTextFromUpload, normalizeText } from './text-extract.js';
-import { assistantChat, generateSmartSummary, simulateScenario } from './gemini.js';
+import { assistantChat, generateSmartSummary, simulateScenario, parsePolicyDetailed } from './gemini.js';
 import { getPolicy, putPolicy, updatePolicy } from './storage.js';
 import type { ScenarioRequest } from './types.js';
 
@@ -105,6 +105,34 @@ app.post('/api/policy/analyze', async (req, res) => {
     res.json({ policyId, summary });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Analysis failed.' });
+  }
+});
+
+/**
+ * Detailed parse for visualizer/exclusions/simulator features.
+ * Body: { policyId, provider?, policyName? }
+ */
+app.post('/api/policy/parse', async (req, res) => {
+  try {
+    const { policyId, provider, policyName } = req.body ?? {};
+    if (!policyId) return res.status(400).json({ error: 'policyId is required.' });
+
+    let rawText = '';
+    if (policyId !== 'demo-policy-id') {
+      const policy = getPolicy(policyId);
+      if (!policy) return res.status(404).json({ error: 'Policy not found.' });
+      rawText = policy.rawText;
+    }
+
+    const result = await parsePolicyDetailed({
+      rawText: rawText,
+      provider,
+      policyName
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message ?? 'Parsing failed.' });
   }
 });
 

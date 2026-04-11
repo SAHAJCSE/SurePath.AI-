@@ -1,4 +1,5 @@
 <div align="center">
+  <img width="1200" height="auto" alt="SurePath AI Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
   
   # SurePath AI
   ### "Your Policy, Deciphered."
@@ -132,6 +133,3 @@ Students from Chitkara University (CSE) building SurePath AI.
   Built with ❤️ to make insurance simple and transparent.
 </div>
 
-<div align="center">
-  Built with ❤️ to make insurance simple, transparent, and accessible for everyone.
-</div>

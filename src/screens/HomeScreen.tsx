@@ -42,6 +42,12 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
     }
   }
 
+  function handleDemo() {
+    localStorage.setItem('surepath_policy_id', 'demo-policy-id');
+    localStorage.setItem('surepath_policy_name', 'Care Supreme Plus (Demo)');
+    onStart();
+  }
+
   return (
     <motion.main
       initial={{ opacity: 0, y: 20 }}
@@ -109,6 +115,12 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
           <span className="font-label font-semibold text-sm text-on-surface text-center leading-tight">Select Company</span>
         </button>
         </div>
+        <button 
+          onClick={handleDemo}
+          className="w-full py-4 text-xs font-bold text-primary hover:underline"
+        >
+          Don't have a policy? Try Demo Policy
+        </button>
       </section>
 
       <section className="mt-12">

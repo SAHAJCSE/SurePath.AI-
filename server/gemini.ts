@@ -369,3 +369,81 @@ function demoAssistantReply(messages: Array<{ role: 'user' | 'assistant'; text: 
   return 'I can help with coverage details, claim amount estimates, eligibility checks, and required documents. Ask me a specific scenario.';
 }
 
+export async function parsePolicyDetailed(opts: {
+  rawText: string;
+  provider?: string;
+  policyName?: string;
+}): Promise<any> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) return demoDetailedPolicy(opts.provider, opts.policyName);
+
+  const ai = new GoogleGenAI({ apiKey });
+  const system = `You are an insurance policy analyzer. Extract structured data from policy text.
+Return STRICT JSON only. Follow the requested schema exactly.
+If a sum insured is mentioned, use it. Default to 500000 if not found.`;
+
+  const prompt = `
+Extract the following from the policy text:
+1. Policy name and insurer
+2. Total sum insured (as a number in ₹)
+3. List of coverages: name, amount covered (as a number or "Unlimited"), unit (₹, %, days), isCovered (boolean)
+4. List of exclusions: title, description, severity (high|medium|low)
+5. General conditions (string array)
+
+JSON format:
+{
+  "policyName": "...",
+  "insurer": "...",
+  "totalSumInsured": 500000,
+  "coverages": [
+    { "name": "Room Rent", "amount": 7000, "unit": "₹/day", "isCovered": true }
+  ],
+  "exclusions": [
+    { "title": "...", "description": "...", "severity": "high" }
+  ],
+  "generalConditions": ["..."]
+}
+
+Policy text:
+${opts.rawText.slice(0, 30000)}
+`;
+
+  try {
+    const resp = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ role: 'user', parts: [{ text: system + '\n\n' + prompt }] }],
+    });
+    const parsed = safeJsonParse(resp.text ?? '');
+    return parsed || demoDetailedPolicy(opts.provider, opts.policyName);
+  } catch {
+    return demoDetailedPolicy(opts.provider, opts.policyName);
+  }
+}
+
+function demoDetailedPolicy(provider?: string, policyName?: string) {
+  return {
+    policyName: policyName || "Care Supreme Plus",
+    insurer: provider || "Care Health Insurance",
+    totalSumInsured: 500000,
+    coverages: [
+      { name: "Room Rent", amount: 10000, unit: "₹/day", isCovered: true },
+      { name: "ICU Charges", amount: "Unlimited", unit: "₹", isCovered: true },
+      { name: "Pre-Hospitalization", amount: 30000, unit: "₹", isCovered: true },
+      { name: "Post-Hospitalization", amount: 60000, unit: "₹", isCovered: true },
+      { name: "Ambulance Cover", amount: 2000, unit: "₹/trip", isCovered: true },
+      { name: "Dental Treatment", amount: 0, unit: "₹", isCovered: false }
+    ],
+    exclusions: [
+      { title: "Pre-existing Diseases", description: "Waiting period of 48 months applies for most chronic conditions.", severity: "high" },
+      { title: "Cosmetic Surgery", description: "Not covered unless necessitated by an accident.", severity: "medium" },
+      { title: "Self-inflicted injury", description: "Suicide or attempted suicide is strictly excluded.", severity: "high" },
+      { title: "Alcohol/Substance Abuse", description: "Treatment for alcoholism or drug addiction is not covered.", severity: "high" },
+      { title: "Maternity", description: "Only covered if added as a specific rider.", severity: "low" }
+    ],
+    generalConditions: [
+      "24-hour hospitalization required for most claims.",
+      "Claim must be filed within 30 days of discharge.",
+      "Network hospitals preferred for cashless facility."
+    ]
+  };
+}

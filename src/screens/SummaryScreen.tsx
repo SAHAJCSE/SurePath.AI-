@@ -1,196 +1,153 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Heart, Car, Building2, BrainCircuit, Gavel, ChevronDown, ChevronUp } from 'lucide-react';
-
-const coverageDetails = [
-  {
-    key: 'accident',
-    icon: Car,
-    title: 'Accident Coverage',
-    value: '₹5 Lakh',
-    desc: 'Comprehensive payout for accidental disability or loss of life.',
-    accent: 'text-primary',
-    bg: 'bg-primary-fixed',
-    iconColor: 'text-on-primary-fixed',
-    bullets: [
-      'Covers accidental death.',
-      'Permanent total disability is covered.',
-      'Partial disability like loss of limb/eyesight included.',
-      'Compensation for accident-related injuries.',
-      '24/7 protection, including travel scenarios if policy allows.',
-    ],
-  },
-  {
-    key: 'natural',
-    icon: Heart,
-    title: 'Natural Death',
-    value: '₹3 Lakh',
-    desc: 'Base protection amount for non-accidental mortality events.',
-    accent: 'text-secondary',
-    bg: 'bg-secondary-container',
-    iconColor: 'text-on-secondary-container',
-    bullets: [
-      'Covers illness and natural causes.',
-      'Critical illness benefit may apply as per clause.',
-      'No accident trigger required.',
-      'Coverage activates after waiting period.',
-      'Nominee receives payout based on policy terms.',
-    ],
-  },
-  {
-    key: 'hospital',
-    icon: Building2,
-    title: 'Hospitalization',
-    value: 'Covered',
-    desc: 'Network hospitals support direct cashless facility (1200+ centers).',
-    accent: 'text-tertiary',
-    bg: 'bg-tertiary-fixed',
-    iconColor: 'text-on-tertiary-fixed-variant',
-    bullets: [
-      'Cashless treatment at network hospitals.',
-      'Includes room rent, ICU, surgery charges.',
-      'Pre/post-hospitalization expenses are considered.',
-      'Emergency ambulance benefit included.',
-      'Paperless claim flow in supported hospitals.',
-    ],
-  },
-];
+import { usePolicy } from '../hooks/usePolicy';
+import { Loader2, BrainCircuit, ShieldCheck, Zap, Info, ArrowRight } from 'lucide-react';
 
 export const SummaryScreen = () => {
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const { policy, loading, error } = usePolicy();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
+
+  if (error || !policy) {
+    return (
+      <div className="pt-24 px-6 text-center">
+        <p className="text-error font-bold">Error loading policy: {error || 'No policy found'}</p>
+        <p className="text-sm mt-2">Please upload a policy from the home screen.</p>
+      </div>
+    );
+  }
+
   return (
-  <motion.main
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-    className="pt-24 pb-32 px-6 max-w-5xl mx-auto space-y-8"
-  >
-    <section className="space-y-2">
-      <div className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-bold uppercase tracking-widest">
-        AI Intelligence Active
-      </div>
-      <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface leading-tight">
-        Your Policy, <span className="bg-gradient-to-br from-[#003d9b] to-[#0052cc] bg-clip-text text-transparent">Deciphered.</span>
-      </h2>
-      <p className="text-on-surface-variant font-body text-sm leading-relaxed max-w-md">
-        We've analyzed 48 pages of legal text to give you the most critical insights into your coverage.
-      </p>
-    </section>
+    <motion.main
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="pt-24 pb-32 px-6 max-w-5xl mx-auto space-y-8"
+    >
+      <section className="space-y-2">
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-bold uppercase tracking-widest">
+          AI Analysis Complete
+        </div>
+        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface leading-tight">
+          {policy.policyName} <span className="bg-gradient-to-br from-[#003d9b] to-[#0052cc] bg-clip-text text-transparent">Overview.</span>
+        </h2>
+        <p className="text-on-surface-variant font-body text-sm leading-relaxed max-w-md">
+          Insights extracted from your {policy.insurer} policy document.
+        </p>
+      </section>
 
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-      <div className="md:col-span-7 bg-surface-container-lowest rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_12px_24px_-4px_rgba(25,27,35,0.06)]">
-        <div className="relative w-48 h-48 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90">
-            <circle className="text-surface-container-low" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" strokeWidth="12"></circle>
-            <circle className="text-primary" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" strokeDasharray="552.92" strokeDashoffset="138" strokeLinecap="round" strokeWidth="12"></circle>
-          </svg>
-          <div className="absolute flex flex-col items-center">
-            <span className="font-headline text-5xl font-extrabold text-on-surface">82</span>
-            <span className="font-label text-xs uppercase tracking-tighter text-on-surface-variant font-bold">Safety Score</span>
-          </div>
-        </div>
-        <div className="flex-1 space-y-4 text-center md:text-left">
-          <h3 className="font-headline text-xl font-bold">Resilient Protection</h3>
-          <p className="text-sm text-on-surface-variant leading-relaxed">Your policy provides exceptional protection against high-impact events, though outpatient care has limited scope.</p>
-          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-            <span className="px-4 py-2 rounded-xl bg-surface-container-low text-primary font-bold text-xs">High Resilience</span>
-            <span className="px-4 py-2 rounded-xl bg-surface-container-low text-primary font-bold text-xs">92% Coverage Match</span>
-          </div>
-        </div>
-        <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="md:col-span-5 bg-surface-container-low rounded-2xl p-8 flex flex-col justify-between shadow-sm">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-headline font-bold text-on-surface">Complexity</h3>
-            <BrainCircuit className="text-primary" size={24} />
-          </div>
-          <div className="h-4 w-full bg-surface-container-highest rounded-full overflow-hidden">
-            <div className="h-full bg-primary w-[35%] rounded-full"></div>
-          </div>
-          <p className="text-xs text-on-surface-variant font-medium">Standard legal density. Most clauses follow industry norms with minimal hidden jargon.</p>
-        </div>
-        <div className="pt-6">
-          <span className="font-label text-[10px] uppercase font-black text-on-surface-variant/40 tracking-[0.2em]">Complexity Tier: Low-Medium</span>
-        </div>
-      </div>
-
-      <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {coverageDetails.map((item) => (
-          <div key={item.key} className="bg-surface-container-lowest rounded-2xl p-6 space-y-4 border border-outline-variant/10">
-            <div className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center`}>
-              <item.icon className={item.iconColor} size={24} />
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Sum Insured Card */}
+        <div className="md:col-span-7 bg-primary p-8 rounded-3xl text-on-primary flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-xl shadow-primary/20">
+          <div className="relative w-40 h-40 flex items-center justify-center">
+            <div className="absolute inset-0 border-4 border-on-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-on-primary rounded-full border-t-transparent animate-spin-slow"></div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Sum Insured</span>
+              <span className="font-headline text-2xl font-extrabold text-on-primary text-center">₹{policy.totalSumInsured.toLocaleString()}</span>
             </div>
-            <div>
-              <h4 className="font-headline font-bold text-on-surface">{item.title}</h4>
-              <p className={`font-headline text-2xl font-black mt-1 ${item.accent}`}>{item.value}</p>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">{item.desc}</p>
-            <button
-              onClick={() => setExpandedCard(expandedCard === item.key ? null : item.key)}
-              className="text-xs font-bold text-primary flex items-center gap-1"
-            >
-              {expandedCard === item.key ? 'Read Less' : 'Read More'}
-              {expandedCard === item.key ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-            {expandedCard === item.key && (
-              <ul className="text-xs text-on-surface-variant space-y-2 list-disc pl-4">
-                {item.bullets.map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-            )}
           </div>
-        ))}
-      </div>
-
-      <div className="md:col-span-8 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 relative overflow-hidden">
-        <div className="flex items-center gap-3 mb-6">
-          <Gavel className="text-error" size={24} fill="currentColor" />
-          <h3 className="font-headline font-bold text-xl">Important Clauses</h3>
+          <div className="flex-1 space-y-4 text-center md:text-left">
+            <h3 className="font-headline text-xl font-bold">Comprehensive Coverage</h3>
+            <p className="text-sm text-on-primary/80 leading-relaxed">Your policy provides a solid foundation with ₹{policy.totalSumInsured.toLocaleString()} total sum insured. Excellent for mid-tier hospitalizations.</p>
+            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              <span className="px-3 py-1.5 rounded-xl bg-on-primary text-primary font-bold text-[10px] uppercase">Active Plan</span>
+              <span className="px-3 py-1.5 rounded-xl bg-on-primary/10 text-on-primary border border-on-primary/20 font-bold text-[10px] uppercase">{policy.insurer}</span>
+            </div>
+          </div>
+          <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
         </div>
-        <ul className="space-y-6">
-          {[
-            { title: 'Waiting Period (30 Days)', desc: 'No claims for illness within the first 30 days of policy issuance, except for accidents.' },
-            { title: 'Pre-existing Condition (3 Years)', desc: 'Conditions declared at purchase are covered after a continuous 36-month period.' },
-            { title: 'Claim Notification', desc: 'All hospitalizations must be reported within 24 hours of admission for cashless.' }
-          ].map((item, i) => (
-            <li key={i} className="flex gap-4">
-              <div className="mt-1 w-2 h-2 rounded-full bg-primary shrink-0"></div>
+
+        {/* AI Score Card */}
+        <div className="md:col-span-5 bg-surface-container-low rounded-3xl p-8 flex flex-col justify-between border border-outline-variant/30">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-headline font-bold text-on-surface">Analysis Depth</h3>
+              <BrainCircuit className="text-primary" size={24} />
+            </div>
+            <div className="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+              <div className="h-full bg-primary w-[85%] rounded-full"></div>
+            </div>
+            <p className="text-xs text-on-surface-variant font-medium">We've identified {policy.coverages.length} coverage points and {policy.exclusions.length} exclusions.</p>
+          </div>
+          <div className="pt-6 flex items-center gap-2">
+            <Zap className="text-secondary" size={16} fill="currentColor" />
+            <span className="font-label text-[10px] uppercase font-black text-on-surface-variant tracking-[0.2em]">SurePath Verified</span>
+          </div>
+        </div>
+
+        {/* Coverage Highlights */}
+        <div className="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {policy.coverages.slice(0, 3).map((item, idx) => (
+            <div key={idx} className="bg-surface-container-lowest rounded-3xl p-6 space-y-4 border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow">
+              <div className={`w-12 h-12 rounded-2xl bg-secondary-container/20 text-secondary flex items-center justify-center`}>
+                <ShieldCheck size={24} />
+              </div>
               <div>
-                <p className="font-bold text-sm text-on-surface">{item.title}</p>
-                <p className="text-sm text-on-surface-variant mt-1">{item.desc}</p>
+                <h4 className="font-headline font-bold text-on-surface text-sm uppercase tracking-wide">{item.name}</h4>
+                <p className="font-headline text-2xl font-black mt-1 text-primary">
+                  {typeof item.amount === 'number' ? `₹${item.amount.toLocaleString()}` : item.amount}
+                </p>
+                <p className="text-[10px] font-bold text-on-surface-variant opacity-60">UNIT: {item.unit}</p>
               </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="md:col-span-4 bg-primary rounded-2xl p-8 text-on-primary flex flex-col justify-between shadow-xl">
-        <div className="space-y-2">
-          <h4 className="font-label text-[10px] uppercase font-black tracking-widest text-on-primary/60">Next Payment</h4>
-          <p className="font-headline text-3xl font-black tracking-tight">₹1,450</p>
-          <p className="text-xs text-on-primary/80 font-medium">Due on Oct 12, 2023</p>
-        </div>
-        <div className="mt-8 pt-8 border-t border-on-primary/10">
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-on-primary/40">Premium History</p>
-              <div className="flex items-end gap-1 mt-3">
-                <div className="w-3 h-8 bg-on-primary/20 rounded-sm"></div>
-                <div className="w-3 h-10 bg-on-primary/40 rounded-sm"></div>
-                <div className="w-3 h-6 bg-on-primary/20 rounded-sm"></div>
-                <div className="w-3 h-12 bg-on-primary rounded-sm"></div>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${item.isCovered ? 'bg-secondary' : 'bg-error'}`} />
+                <span className="text-xs font-bold text-on-surface-variant">{item.isCovered ? 'Active Coverage' : 'Not Covered'}</span>
               </div>
             </div>
-            <button className="w-12 h-12 rounded-xl bg-on-primary text-primary flex items-center justify-center active:scale-95 duration-200">
-              <ArrowRight size={24} />
-            </button>
+          ))}
+        </div>
+
+        {/* Exclusions Summary */}
+        <div className="md:col-span-8 bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/20 relative overflow-hidden shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error">
+               <Info size={24} />
+            </div>
+            <h3 className="font-headline font-bold text-xl">Critical Exclusions</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {policy.exclusions.slice(0, 4).map((item, i) => (
+              <div key={i} className="p-4 bg-surface-container-low rounded-2xl border-l-4 border-error/30">
+                <p className="font-bold text-sm text-on-surface">{item.title}</p>
+                <p className="text-[10px] text-on-surface-variant mt-1 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Network Hospital CTA */}
+        <div className="md:col-span-4 bg-on-surface rounded-3xl p-8 text-on-primary-container flex flex-col justify-between shadow-xl">
+          <div className="space-y-4">
+             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-on-primary">
+                <ShieldCheck size={28} />
+             </div>
+             <div>
+                <h4 className="font-headline font-bold text-lg leading-tight">Find Network Hospitals</h4>
+                <p className="text-xs text-on-surface-variant mt-2 leading-relaxed">Access 12,000+ cashless facilities across {policy.insurer}'s network.</p>
+             </div>
+          </div>
+          <button className="w-full mt-6 py-4 bg-primary text-on-primary rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+            Open Maps
+            <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
-    </div>
-  </motion.main>
+
+      <style>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
+    </motion.main>
   );
 };
