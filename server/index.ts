@@ -126,7 +126,7 @@ app.post('/api/policy/parse', async (req, res) => {
 
     const result = await parsePolicyDetailed({
       rawText: rawText,
-      provider,
+      provider: provider || policyName, // Use provider or policyName
       policyName
     });
 

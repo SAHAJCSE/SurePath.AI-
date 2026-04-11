@@ -427,29 +427,73 @@ ${opts.rawText.slice(0, 30000)}
 }
 
 function demoDetailedPolicy(provider?: string, policyName?: string) {
-  return {
-    policyName: policyName || "Care Supreme Plus",
-    insurer: provider || "Care Health Insurance",
-    totalSumInsured: 500000,
+  const p = (provider || '').toLowerCase();
+  
+  if (p.includes('hdfc')) return {
+    policyName: "Optima Secure",
+    insurer: "HDFC ERGO",
+    totalSumInsured: 1000000,
     coverages: [
-      { name: "Room Rent", amount: 10000, unit: "₹/day", isCovered: true },
-      { name: "ICU Charges", amount: "Unlimited", unit: "₹", isCovered: true },
-      { name: "Pre-Hospitalization", amount: 30000, unit: "₹", isCovered: true },
-      { name: "Post-Hospitalization", amount: 60000, unit: "₹", isCovered: true },
-      { name: "Ambulance Cover", amount: 2000, unit: "₹/trip", isCovered: true },
-      { name: "Dental Treatment", amount: 0, unit: "₹", isCovered: false }
+      { name: "Room Rent (No Limit)", amount: "No cap", unit: "", isCovered: true },
+      { name: "ICU Charges", amount: "No cap", unit: "", isCovered: true },
+      { name: "Pre/Post Hospitalization", amount: 60, unit: "days/180 days", isCovered: true },
+      { name: "Consumables Cover", amount: 100, unit: "%", isCovered: true }
     ],
     exclusions: [
-      { title: "Pre-existing Diseases", description: "Waiting period of 48 months applies for most chronic conditions.", severity: "high" },
-      { title: "Cosmetic Surgery", description: "Not covered unless necessitated by an accident.", severity: "medium" },
-      { title: "Self-inflicted injury", description: "Suicide or attempted suicide is strictly excluded.", severity: "high" },
-      { title: "Alcohol/Substance Abuse", description: "Treatment for alcoholism or drug addiction is not covered.", severity: "high" },
-      { title: "Maternity", description: "Only covered if added as a specific rider.", severity: "low" }
+      { title: "Investigations", description: "Costs of X-rays, MRIs, etc., may be capped or excluded.", severity: "medium" },
+      { title: "Cosmetic Surgery", description: "Purely cosmetic surgeries are not covered.", severity: "medium" }
+    ],
+    generalConditions: ["30-day initial waiting period.", "36-month waiting period for pre-existing diseases."]
+  };
+
+  if (p.includes('sbi')) return {
+    policyName: "Arogya Shield",
+    insurer: "SBI Life Insurance",
+    totalSumInsured: 750000,
+    coverages: [
+      { name: "Hospitalization Expenses", amount: 750000, unit: "₹", isCovered: true },
+      { name: "Alternative Treatment (AYUSH)", amount: 25000, unit: "₹", isCovered: true }
+    ],
+    exclusions: [
+      { title: "30-Day Waiting Period", description: "No coverage for any illness in the first 30 days.", severity: "high" },
+      { title: "Hazardous Sports", description: "Injuries from adventure sports are excluded.", severity: "low" }
+    ],
+    generalConditions: ["Cashless claim facility available.", "5% discount on combined premiums."]
+  };
+
+  if (p.includes('icici')) return {
+    policyName: "iShield (Combi Plan)",
+    insurer: "ICICI Prudential",
+    totalSumInsured: 1000000,
+    coverages: [
+      { name: "Hospitalization", amount: 1000000, unit: "₹", isCovered: true },
+      { name: "Restore Benefit", amount: 100, unit: "% of SI", isCovered: true }
+    ],
+    exclusions: [
+      { title: "2-Year Exclusion", description: "Specific illnesses are not covered for 2 years.", severity: "high" },
+      { title: "Self-Inflicted Injury", description: "Any injury caused by yourself.", severity: "high" }
+    ],
+    generalConditions: ["Combines health and life insurance.", "Life cover up to age 85."]
+  };
+
+  // Default: LIC
+  return {
+    policyName: policyName || "Jeevan Arogya",
+    insurer: provider || "Life Insurance Corporation (LIC)",
+    totalSumInsured: 500000,
+    coverages: [
+      { name: "Hospital Cash Benefit", amount: 2000, unit: "₹/day", isCovered: true },
+      { name: "Major Surgical Benefit", amount: 500000, unit: "₹", isCovered: true },
+      { name: "Day Care Procedure Benefit", amount: 10000, unit: "₹", isCovered: true },
+      { name: "Pre-existing Diseases", amount: 0, unit: "₹", isCovered: false }
+    ],
+    exclusions: [
+      { title: "Pre-existing Diseases", description: "Conditions before purchase are not covered for 48 months.", severity: "high" },
+      { title: "Substance Abuse", description: "Treatment related to alcohol or drug abuse is excluded.", severity: "medium" }
     ],
     generalConditions: [
-      "24-hour hospitalization required for most claims.",
-      "Claim must be filed within 30 days of discharge.",
-      "Network hospitals preferred for cashless facility."
+      "30-day initial waiting period for illnesses.",
+      "48-month waiting period for pre-existing conditions."
     ]
   };
 }

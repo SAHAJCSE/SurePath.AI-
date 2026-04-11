@@ -12,12 +12,14 @@ export function usePolicy() {
       const policyId = localStorage.getItem('surepath_policy_id');
       if (!policyId) return;
 
+      const provider = localStorage.getItem('surepath_selected_provider') || '';
+
       setLoading(true);
       try {
         const res = await fetch(`${API_BASE}/api/policy/parse`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ policyId }),
+          body: JSON.stringify({ policyId, provider }),
         });
 
         if (!res.ok) throw new Error('Failed to parse policy');

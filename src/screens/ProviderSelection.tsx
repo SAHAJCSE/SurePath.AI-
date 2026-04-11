@@ -86,11 +86,13 @@ export const ProviderSelection = ({ onSelect }: ProviderSelectionProps) => {
           setShowValidation(true);
           return;
         }
+        localStorage.setItem('surepath_selected_provider', selected);
+        localStorage.setItem('surepath_policy_id', 'demo-policy-id');
         onSelect(selected);
       }}
-      className="mt-5 w-full h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold"
+      className="mt-5 w-full h-16 rounded-[1.25rem] bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
     >
-      Continue with {selected || 'Selected Provider'}
+      Initialize with {selected || 'Selected Provider'}
     </button>
 
     <div className="mt-12 p-6 bg-gradient-to-br from-primary to-primary-container rounded-[2rem] text-on-primary shadow-xl relative overflow-hidden">
