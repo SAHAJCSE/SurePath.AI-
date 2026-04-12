@@ -47,7 +47,7 @@ export const ClaimResultCard = ({ result, loading = false }: Props) => {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-surface-container-lowest rounded-[2.5rem] p-8 border border-outline-variant/20 shadow-xl shadow-primary/5 flex flex-col items-center justify-center min-h-[400px] text-center"
+                className="bg-surface-container-lowest rounded-2xl lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 border border-outline-variant/20 shadow-xl shadow-primary/5 flex flex-col items-center justify-center min-h-[280px] sm:min-h-[340px] lg:min-h-[400px] text-center"
             >
                 <Zap className="animate-spin text-primary mb-4" size={48} />
                 <div className="space-y-2">
@@ -69,42 +69,42 @@ export const ClaimResultCard = ({ result, loading = false }: Props) => {
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`rounded-[2.5rem] p-8 border shadow-xl shadow-primary/5 overflow-hidden ${statusConfig.bg}`}
+            className={`rounded-2xl lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 border shadow-lg sm:shadow-xl shadow-primary/5 overflow-hidden ${statusConfig.bg}`}
         >
             {/* Status Header */}
-            <div className="absolute top-6 left-6 w-16 h-16 bg-gradient-to-br from-white to-surface-container-low rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/20">
-                <statusConfig.icon size={28} className={`${statusConfig.color} drop-shadow-lg`} />
+            <div className="absolute top-4 sm:top-6 left-4 sm:left-6 w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-white to-surface-container-low rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                <statusConfig.icon size={24} sm:size={28} className={`${statusConfig.color} drop-shadow-lg`} />
             </div>
 
             {/* Main Content */}
-            <div className="relative pl-24 space-y-6 pt-4">
+            <div className="relative pl-20 sm:pl-24 space-y-4 sm:space-y-6 pt-3 sm:pt-4">
                 {/* Status Badge */}
                 <motion.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-lg tracking-wider border-4 shadow-2xl ${statusConfig.color} ${statusConfig.bg}`}
+                    className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base lg:text-lg tracking-wider border-2 sm:border-3 lg:border-4 shadow-lg sm:shadow-2xl ${statusConfig.color} ${statusConfig.bg}`}
                 >
-                    <span className="text-2xl">{statusConfig.emoji}</span>
+                    <span className="text-xl sm:text-2xl">{statusConfig.emoji}</span>
                     {result.claim_status.toUpperCase()}
                 </motion.div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="text-center p-6 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Approval Chance</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20">
+                        <p className="text-xs sm:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Approval Chance</p>
                         <div className="flex items-baseline justify-center gap-1">
-                            <span className="text-3xl font-headline font-black text-on-surface">{result.approval_chance}%</span>
-                            <span className="text-sm font-bold text-on-surface-variant">Chance</span>
+                            <span className="text-2xl sm:text-3xl font-headline font-black text-on-surface">{result.approval_chance}%</span>
+                            <span className="text-xs sm:text-sm font-bold text-on-surface-variant">Chance</span>
                         </div>
                     </div>
 
-                    <div className="text-center p-6 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Risk Level</p>
+                    <div className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20">
+                        <p className="text-xs sm:text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Risk Level</p>
                         <motion.span
                             initial={{ scale: 0.8 }}
                             animate={{ scale: 1 }}
-                            className={`text-xl font-black px-4 py-2 rounded-xl border-4 ${riskConfig.color} bg-white/20`}
+                            className={`text-sm sm:text-base lg:text-xl font-black px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border-2 sm:border-4 ${riskConfig.color} bg-white/20`}
                         >
                             {riskConfig.label}
                         </motion.span>
@@ -112,17 +112,17 @@ export const ClaimResultCard = ({ result, loading = false }: Props) => {
                 </div>
 
                 {/* AI Explanation */}
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                    <div className="flex items-start gap-3 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-container rounded-xl flex items-center justify-center flex-shrink-0 text-on-primary shadow-lg">
-                            <Zap size={20} />
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/30">
+                    <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-primary-container rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 text-on-primary shadow-lg">
+                            <Zap className="size-4 sm:size-5" />
                         </div>
                         <div>
-                            <h4 className="font-headline font-black text-on-surface text-lg mb-1">Why This Result?</h4>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">AI Policy Analysis</p>
+                            <h4 className="font-headline font-black text-on-surface text-base sm:text-lg mb-1">Why This Result?</h4>
+                            <p className="text-xs sm:text-[10px] font-bold uppercase tracking-widest text-primary">AI Policy Analysis</p>
                         </div>
                     </div>
-                    <p className="text-on-surface leading-relaxed text-base font-medium">
+                    <p className="text-on-surface leading-relaxed text-sm sm:text-base font-medium">
                         {result.reason}
                     </p>
                 </div>

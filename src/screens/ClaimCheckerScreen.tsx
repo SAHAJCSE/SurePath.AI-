@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { usePolicy } from '../hooks/usePolicy';
 import { API_BASE } from '../config';
 import { ClaimInputCard } from '../components/features/claim-checker/ClaimInputCard';
@@ -16,7 +16,7 @@ interface ClaimResult {
 
 export const ClaimCheckerScreen = () => {
     const { policy, loading: policyLoading } = usePolicy();
-    const [scenario, setScenario] = useState('');
+    const [scenario, setScenario] = useState('Major Surgery');
     const [result, setResult] = useState<ClaimResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export const ClaimCheckerScreen = () => {
                 body: JSON.stringify({
                     policyId,
                     scenario,
-                    policy: policy, // Send full policy data
+                    policy: policy,
                     provider
                 }),
             });
@@ -59,13 +59,12 @@ export const ClaimCheckerScreen = () => {
             if (data.result) {
                 setResult(data.result);
             } else {
-                // Demo fallback
                 setResult(demoResult(scenario, policy));
             }
         } catch (err: any) {
             console.error('Claim check failed:', err);
-            setError('Analysis failed. Using demo mode. Check server connection.');
-            setResult(demoResult(scenario, policy || null));
+            setError('Using demo mode (server offline)');
+            setResult(demoResult(scenario, policy!));
         } finally {
             setLoading(false);
         }
@@ -92,7 +91,7 @@ export const ClaimCheckerScreen = () => {
         <motion.main
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-8"
+            className="pt-20 pb-28 px-4 sm:px-6 max-w-4xl mx-auto space-y-6 sm:space-y-8"
         >
             {/* Header */}
             <div className="flex items-center gap-3 mb-8">
@@ -109,7 +108,7 @@ export const ClaimCheckerScreen = () => {
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 {/* Input Card */}
                 <ClaimInputCard
                     scenario={scenario}
@@ -122,23 +121,22 @@ export const ClaimCheckerScreen = () => {
                 <div className="lg:col-span-1">
                     {error && (
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-error/5 border border-error/20 rounded-[2.5rem] p-8 text-error"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-error/10 border border-error/30 rounded-2xl p-4 mb-6 backdrop-blur-sm flex items-center gap-3 text-error text-sm font-medium"
                         >
-                            <AlertCircle size={48} className="mx-auto mb-4 opacity-75" />
-                            <h4 className="font-headline font-black text-xl mb-3 text-center">Oops!</h4>
-                            <p className="text-sm leading-relaxed mb-6">{error}</p>
+                            <AlertCircle size={20} />
+                            <span>{error}</span>
                             <button
-                                onClick={clearResult}
-                                className="w-full h-12 bg-error text-on-error font-black uppercase tracking-wider rounded-2xl hover:bg-error/90 transition-all shadow-lg"
+                                onClick={() => setError(null)}
+                                className="ml-auto px-4 py-1 bg-error/80 text-on-error text-xs font-black uppercase tracking-wider rounded-xl hover:bg-error transition-all"
                             >
-                                Try Again
+                                × Dismiss
                             </button>
                         </motion.div>
                     )}
 
-                    {!loading && !error && (
+                    {result && (
                         <ClaimResultCard result={result} loading={false} />
                     )}
                 </div>
@@ -160,18 +158,17 @@ export const ClaimCheckerScreen = () => {
                 </motion.div>
             )}
 
-            <style jsx>{`
-        @keyframes pulse-glow {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-      `}</style>
+            <style>{`
+                @keyframes pulse-glow {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.7; }
+                }
+            `}</style>
         </motion.main>
     );
 };
 
-// Demo fallback for no API key/server
-function demoResult(scenario: string, policy: ParsedPolicy | null): ClaimResult {
+function demoResult(scenario: string, policy: ParsedPolicy): ClaimResult {
     const lowerScenario = scenario.toLowerCase();
 
     if (lowerScenario.includes('diabetes') || lowerScenario.includes('first year') || lowerScenario.includes('pre-existing')) {
@@ -188,7 +185,7 @@ function demoResult(scenario: string, policy: ParsedPolicy | null): ClaimResult 
             claim_status: 'approved',
             approval_chance: 95,
             risk_level: 'low',
-            reason: 'Accidental injuries are fully covered with no waiting period.'
+            reason: 'Accidental injuries fully covered with no waiting period.'
         };
     }
 
@@ -208,4 +205,3 @@ function demoResult(scenario: string, policy: ParsedPolicy | null): ClaimResult 
         reason: 'Covered within limits. Check policy for room rent caps and exclusions.'
     };
 }
-

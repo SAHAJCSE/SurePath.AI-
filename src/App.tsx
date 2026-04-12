@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { Screen } from './types/index';
 import { Header } from './components/layout/Header';
