@@ -133,6 +133,25 @@ All money amounts should be short human readable strings like "₹5 lakh" or "�
   }
 }
 
+async function callGeminiWithRetry(ai: any, prompt: string, retries = 2): Promise<any> {
+  let lastError;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const resp = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        config: { temperature: 0.1, responseMimeType: 'application/json' },
+        contents: [{ role: 'user', parts: [{ text: prompt }] }]
+      });
+      const parsed = safeJsonParse(resp.text ?? '');
+      if (parsed) return parsed;
+      throw new Error('Invalid JSON format');
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('Failed to parse valid JSON from AI');
+}
+
 export async function analyzePolicyMasterPrompt(opts: {
   rawText: string;
   provider?: string;
@@ -143,36 +162,172 @@ export async function analyzePolicyMasterPrompt(opts: {
 
   const ai = new GoogleGenAI({ apiKey });
 
-  const promptPath = path.join(process.cwd(), 'server/master-prompt.txt');
-  const masterPrompt = await fs.readFile(promptPath, 'utf-8').catch(() => {
-    console.warn('Master prompt missing - using fallback');
-    return '**Fallback** You are Indian insurance analyst. Return STRICT JSON policy analysis.';
-  });
+  const chunk = opts.rawText.slice(0, 80000);
 
-  const fullPrompt = masterPrompt
-    .replace('{POLICY_TEXT}', opts.rawText.slice(0, 80000))
-    .replace('[paste the full extracted text from the PDF here]', opts.rawText.slice(0, 80000));
+  const MasterPrompt = `You are an expert insurance document parser and structured data generator.
 
-  try {
-    const resp = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      config: {
-        temperature: 0.1,
-        maxOutputTokens: 4000,
-      },
-      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-    });
+Your task is to:
+1. Read the provided insurance policy document (PDF text input).
+2. Extract ONLY relevant, verified information.
+3. Convert it into STRICT JSON matching the UI structure.
 
-    const parsed = safeJsonParse(resp.text ?? '') as PolicyAnalysis;
-    if (!parsed || !parsed.policyHolder) {
-      return demoMasterPromptAnalysis(opts.provider, opts.policyName);
-    }
+⚠️ CRITICAL RULES:
+- Output MUST be valid JSON (no text before/after).
+- DO NOT hallucinate or guess missing values.
+- If data is missing, return null.
+- Keep values clean, short, and user-friendly.
+- Numbers must be properly formatted (no text mixing).
+- Dates must be in ISO format (YYYY-MM-DD).
 
-    return parsed;
-  } catch (err) {
-    console.error('Master analysis error:', err);
-    return demoMasterPromptAnalysis(opts.provider, opts.policyName);
+--------------------------------------
+
+🎯 OUTPUT STRUCTURE:
+
+{
+  "summary": {
+    "policyHolderName": "",
+    "insurer": "",
+    "policyType": "",
+    "policyNumber": "",
+    "startDate": "",
+    "endDate": "",
+    "premium": 0,
+    "coverageAmount": 0,
+    "status": "Active | Expired | Unknown"
+  },
+
+  "coverage": {
+    "included": [
+      {
+        "title": "",
+        "description": "",
+        "limit": 0
+      }
+    ],
+    "excluded": [
+      {
+        "title": "",
+        "reason": ""
+      }
+    ],
+    "addOns": [
+      {
+        "name": "",
+        "cost": 0
+      }
+    ]
+  },
+
+  "riskAnalysis": {
+    "riskScore": 0,
+    "riskLevel": "Low | Medium | High",
+    "keyGaps": [
+      ""
+    ],
+    "recommendations": [
+      ""
+    ]
   }
+}
+
+--------------------------------------
+
+🧠 EXTRACTION LOGIC:
+
+- "Included" = What the policy clearly covers (hospitalization, accident, etc.)
+- "Excluded" = Clauses where claims are NOT allowed
+- "Add-ons" = Riders or optional benefits
+- "Risk Score" = Based on:
+    - Missing coverage
+    - Low coverage amount
+    - High exclusions
+
+--------------------------------------
+
+🎯 UI OPTIMIZATION RULES:
+
+- Keep descriptions SHORT (max 15 words)
+- Titles should be clean labels (e.g., "Hospitalization", not long sentences)
+- Avoid legal jargon
+- Make output ready for dashboard cards
+
+--------------------------------------
+
+Now process the document and return ONLY JSON.
+Document Text:
+${chunk}`;
+
+  let rawJson: any = {};
+  try {
+    rawJson = await callGeminiWithRetry(ai, MasterPrompt, 2) || {};
+  } catch (err) {}
+
+  // Safe Mapping to the robust UI schema the components depend on
+  const sumInsured = Number(rawJson?.summary?.coverageAmount) || 0;
+  
+  const mappedCoverages = [];
+  if (Array.isArray(rawJson?.coverage?.included)) {
+    rawJson.coverage.included.forEach((c: any) => {
+      mappedCoverages.push({
+        name: c.title || "Coverage",
+        amount: c.limit || 'Unlimited',
+        unit: typeof c.limit === 'number' ? '₹' : '',
+        isCovered: true
+      });
+    });
+  }
+  if (Array.isArray(rawJson?.coverage?.addOns)) {
+    rawJson.coverage.addOns.forEach((a: any) => {
+      mappedCoverages.push({
+        name: a.name || "Add-on",
+        amount: a.cost || 'Covered',
+        unit: typeof a.cost === 'number' ? '₹ (Cost)' : '',
+        isCovered: true
+      });
+    });
+  }
+
+  const mappedExclusions = [];
+  if (Array.isArray(rawJson?.coverage?.excluded)) {
+    rawJson.coverage.excluded.forEach((e: any) => {
+      mappedExclusions.push({
+        title: e.title || "Exclusion",
+        description: e.reason || "",
+        severity: "medium" as const,
+        clause_text: e.reason || "",
+        page_number: "Unknown",
+        confidence: "High"
+      });
+    });
+  }
+
+  const verdictCode = String(rawJson?.riskAnalysis?.riskLevel || "Medium").toLowerCase() === "low" 
+    ? "BUY" : (String(rawJson?.riskAnalysis?.riskLevel || "Medium").toLowerCase() === "high" ? "AVOID" : "CAUTION");
+  
+  const reasons = [];
+  if (Array.isArray(rawJson?.riskAnalysis?.keyGaps)) reasons.push(...rawJson.riskAnalysis.keyGaps);
+  if (Array.isArray(rawJson?.riskAnalysis?.recommendations)) reasons.push(...rawJson.riskAnalysis.recommendations);
+
+  return {
+    policyName: rawJson?.summary?.policyType || opts.policyName || 'Unknown Policy',
+    insurer: rawJson?.summary?.insurer || opts.provider || 'Unknown Insurer',
+    totalSumInsured: sumInsured,
+    coverage: {
+      totalCoverage: sumInsured,
+      accidentalCoverage: Math.floor(sumInsured * 0.5),
+      naturalDeath: Math.floor(sumInsured * 0.2),
+      hospitalization: sumInsured,
+      criticalIllness: 0
+    },
+    coverages: mappedCoverages,
+    exclusions: mappedExclusions,
+    generalConditions: reasons.length ? reasons : ["Standard terms apply."],
+    decision: { 
+      verdict: verdictCode as 'BUY'|'CAUTION'|'AVOID', 
+      risk_score: Number(rawJson?.riskAnalysis?.riskScore) || 50, 
+      reasons: reasons 
+    },
+  };
 }
 
 export async function simulateScenario(opts: {
@@ -441,14 +596,9 @@ function demoMasterPromptAnalysis(provider?: string, policyName?: string): Polic
   const insurer = p.includes('hdfc') ? 'HDFC ERGO' : p.includes('sbi') ? 'SBI Life Insurance' : p.includes('icici') ? 'ICICI Prudential' : 'Life Insurance Corporation (LIC)';
   
   return {
-    policyHolder: {
-      name: "John Doe",
-      dob: "1990-01-01",
-      gender: "Male",
-      policyNumber: "POL123456789",
-      insurer: insurer,
-      policyType: "Health Insurance"
-    },
+    policyName: policyName || "Health Insurance Demo",
+    insurer: insurer,
+    totalSumInsured: 500000,
     coverage: {
       totalCoverage: 500000,
       accidentalCoverage: 500000,
@@ -456,51 +606,39 @@ function demoMasterPromptAnalysis(provider?: string, policyName?: string): Polic
       hospitalization: 500000,
       criticalIllness: 0
     },
-    premium: {
-      amount: 15000,
-      frequency: "Annual",
-      nextDueDate: "2027-01-01"
-    },
-    benefits: [
+    coverages: [
       {
-        title: "Hospital Room Rent",
-        description: "Up to 1% of Sum Insured per day",
-        amount: 5000
+        name: "Hospital Room Rent",
+        amount: 5000,
+        unit: "₹",
+        isCovered: true
       },
       {
-        title: "ICU Charges",
-        description: "Up to 2% of Sum Insured per day",
-        amount: 10000
+        name: "ICU Charges",
+        amount: 10000,
+        unit: "₹",
+        isCovered: true
       }
     ],
     exclusions: [
-      "Pre-existing conditions not covered for first 48 months",
-      "Injuries arising from hazardous sports",
-      "Treatment for substance abuse"
+      {
+        title: "Pre-existing conditions",
+        description: "Not covered for first 48 months",
+        severity: "high",
+        clause_text: "Pre-existing conditions not covered for first 48 months",
+        page_number: "4",
+        confidence: "High"
+      }
     ],
-    claims: {
-      process: "Inform insurer within 24 hours. Submit all documents within 15 days of discharge.",
-      documentsRequired: ["Claim Form", "Discharge Summary", "Original Hospital Bills", "Copy of FIR (if accident)"],
-      contact: "claims@" + (provider || "insurance") + ".com"
-    },
-    validity: {
-      startDate: "2026-01-01",
-      endDate: "2027-01-01",
-      status: "Active"
-    },
-    riskScore: {
-      score: 35,
-      level: "Low",
-      reason: "Comprehensive coverage with reasonable limits and standard waiting periods."
-    },
-    insights: [
+    generalConditions: [
       "Good base coverage for hospitalization.",
       "Consider adding a critical illness rider.",
       "Room rent capping might lead to higher out-of-pocket expenses for premium hospitals."
     ],
-    meta: {
-      confidence: 0.95,
-      missingFields: []
+    decision: {
+      verdict: "BUY",
+      risk_score: 35,
+      reasons: ["Comprehensive coverage with reasonable limits and standard waiting periods."]
     }
   };
 }

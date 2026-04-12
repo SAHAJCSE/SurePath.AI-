@@ -87,7 +87,6 @@ export const ProviderSelection = ({ onSelect }: ProviderSelectionProps) => {
           return;
         }
         localStorage.setItem('surepath_selected_provider', selected);
-        localStorage.setItem('surepath_policy_id', 'demo-policy-id');
         onSelect(selected);
       }}
       className="mt-5 w-full h-16 rounded-[1.25rem] bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"

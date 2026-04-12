@@ -74,52 +74,37 @@ export interface CoverageData {
   criticalIllness: number;
 }
 
-export interface PremiumData {
-  amount: number;
-  frequency: string;
-  nextDueDate: string;
+export interface PolicyCoverageItem {
+  name: string;
+  amount: number | string;
+  unit: string;
+  isCovered: boolean;
 }
 
-export interface BenefitItem {
+export interface ExclusionItem {
   title: string;
   description: string;
-  amount: number;
+  severity: 'high' | 'medium' | 'low';
+  clause_text: string;
+  page_number: string;
+  confidence: string;
 }
 
-export interface ClaimsData {
-  process: string;
-  documentsRequired: string[];
-  contact: string;
-}
-
-export interface ValidityData {
-  startDate: string;
-  endDate: string;
-  status: string;
-}
-
-export interface RiskScoreData {
-  score: number;
-  level: 'Low' | 'Medium' | 'High';
-  reason: string;
-}
-
-export interface MetaData {
-  confidence: number;
-  missingFields: string[];
+export interface DecisionData {
+  verdict: 'BUY' | 'CAUTION' | 'AVOID';
+  risk_score: number;
+  reasons: string[];
 }
 
 export interface PolicyAnalysis {
-  policyHolder: PolicyHolder;
+  policyName: string;
+  insurer: string;
+  totalSumInsured: number;
   coverage: CoverageData;
-  premium: PremiumData;
-  benefits: BenefitItem[];
-  exclusions: string[];
-  claims: ClaimsData;
-  validity: ValidityData;
-  riskScore: RiskScoreData;
-  insights: string[];
-  meta: MetaData;
+  coverages: PolicyCoverageItem[];
+  exclusions: ExclusionItem[];
+  generalConditions: string[];
+  decision: DecisionData;
 }
 
 export type StoredPolicy = {

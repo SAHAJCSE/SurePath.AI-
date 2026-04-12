@@ -167,9 +167,11 @@ export const SummaryScreen = () => {
                   <span className="text-xs font-bold">Standard</span>
                 </div>
                 <div className="flex flex-col gap-1 items-center p-3 rounded-2xl bg-surface-container-lowest border border-outline-variant/10 shadow-sm grow text-center">
-                  <ShieldCheck size={16} className="text-[#10B981]" />
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Status</span>
-                  <span className="text-xs font-bold text-[#10B981]">Active</span>
+                  <ShieldCheck size={16} className={policy.decision?.verdict === 'AVOID' ? "text-[#EF4444]" : policy.decision?.verdict === 'CAUTION' ? "text-[#F59E0B]" : "text-[#10B981]"} />
+                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">AI Decision</span>
+                  <span className={`text-xs font-bold ${policy.decision?.verdict === 'AVOID' ? "text-[#EF4444]" : policy.decision?.verdict === 'CAUTION' ? "text-[#F59E0B]" : "text-[#10B981]"}`}>
+                    {policy.decision?.verdict || 'BUY'}
+                  </span>
                 </div>
               </div>
             </div>

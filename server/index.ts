@@ -54,7 +54,7 @@ app.get('/api/health', (_req, res) => {
  * Upload a policy file (PDF or text).
  * Returns: { policyId, extractedChars }
  */
-app.post('/api/policy/upload', upload.single('file'), async (req, res) => {
+app.post(['/api/policy/upload', '/api/upload'], upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
     const textBody = typeof req.body?.text === 'string' ? req.body.text : '';
@@ -126,7 +126,7 @@ app.post('/api/policy/analyze', async (req, res) => {
  * Master Prompt Policy Analysis (Production-ready JSON extraction).
  * Body: { policyId?, policyText?, provider?, policyName? }
  */
-app.post('/api/analyze-policy', async (req, res) => {
+app.post(['/api/analyze-policy', '/api/analyze'], async (req, res) => {
   try {
     const { policyId, policyText, provider, policyName } = req.body ?? {};
 
@@ -191,16 +191,18 @@ app.post('/api/policy/parse', async (req, res) => {
  */
 app.post('/api/simulate', async (req, res) => {
   try {
-    const { policyData, scenario } = req.body ?? {};
+    const { policyData, scenario, policy, bill } = req.body ?? {};
 
-    if (policyData && scenario) {
+    const effectivePolicy = policy || policyData;
+    const effectiveScenario = bill && policy ? { bill, hasCopay: false } : scenario;
+
+    if (effectivePolicy && effectiveScenario) {
       // New deterministic simulation engine
-      const result = simulate(policyData, scenario);
+      const result = simulate(effectivePolicy, effectiveScenario);
       return res.json(result);
     }
     
-    // Fallback for legacy calls (if any)
-    return res.status(400).json({ error: 'policyData and scenario required.' });
+    return res.status(400).json({ error: 'policy and bill OR policyData and scenario required.' });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Simulation failed.' });
   }

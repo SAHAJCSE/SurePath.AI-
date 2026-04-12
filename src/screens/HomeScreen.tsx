@@ -104,7 +104,17 @@ export const HomeScreen = ({ onStart }: { onStart: () => void }) => {
       <section className="space-y-8">
         {/* Upload Terminal */}
         <div className="bg-surface-container-lowest rounded-[2.5rem] p-8 shadow-2xl shadow-primary/5 border border-outline-variant/20 relative overflow-hidden group">
-          <label className="relative z-10 w-full cursor-pointer flex flex-col items-center justify-center gap-4 py-10 border-2 border-dashed border-primary/30 rounded-[2rem] bg-primary/5 hover:bg-primary/10 transition-all hover:border-primary/60 group">
+          <label 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              const file = e.dataTransfer.files?.[0];
+              if (file) {
+                setFileName(file.name);
+                uploadPolicy(file);
+              }
+            }}
+            className="relative z-10 w-full cursor-pointer flex flex-col items-center justify-center gap-4 py-10 border-2 border-dashed border-primary/30 rounded-[2rem] bg-primary/5 hover:bg-primary/10 transition-all hover:border-primary/60 group">
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center text-primary shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform">
               <Upload size={32} />
             </div>

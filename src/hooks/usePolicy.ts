@@ -38,39 +38,81 @@ export function usePolicy() {
 
         if (!res.ok) throw new Error('Failed to parse policy');
         const data = await res.json();
-        
-        // Map new schema to the UI fields
+
         const temp = data.analysis;
-        const mappedPolicy: ParsedPolicy = {
-          ...temp,
-          totalSumInsured: temp.coverage?.totalCoverage || 0,
-          insurer: temp.policyHolder?.insurer || provider,
-          policyName: temp.policyHolder?.policyType || 'Insurance Policy',
-          generalConditions: temp.insights || [],
-          exclusions: (temp.exclusions || []).map((exc: string) => ({
-            title: 'Exclusion',
-            description: exc,
-            severity: 'medium'
-          })),
-          coverages: temp.benefits ? temp.benefits.map((b: any) => ({
+        if (!temp) throw new Error('No analysis');
+
+        const insurer =
+          temp.policyHolder?.insurer || temp.insurer || provider;
+        const policyName =
+          temp.policyHolder?.policyType || temp.policyName || 'Insurance Policy';
+        const totalSumInsured =
+          Number(temp.totalSumInsured) ||
+          Number(temp.coverage?.totalCoverage) ||
+          0;
+
+        const exclusionsRaw = Array.isArray(temp.exclusions) ? temp.exclusions : [];
+        const exclusions = exclusionsRaw.map((exc: any) =>
+          typeof exc === 'string'
+            ? { title: 'Exclusion', description: exc, severity: 'medium' as const }
+            : {
+                title: String(exc?.title || 'Exclusion'),
+                description: String(exc?.description || ''),
+                severity: (exc?.severity as 'high' | 'medium' | 'low') || 'medium',
+              },
+        );
+
+        let coverages: ParsedPolicy['coverages'] = [];
+        if (Array.isArray(temp.coverages) && temp.coverages.length) {
+          coverages = temp.coverages.map((c: any) => ({
+            name: String(c.name || c.title || 'Coverage'),
+            amount: c.amount ?? c.value ?? 0,
+            unit: String(c.unit || '₹'),
+            isCovered: c.isCovered !== false,
+          }));
+        } else if (Array.isArray(temp.benefits)) {
+          coverages = temp.benefits.map((b: any) => ({
             name: b.title,
             amount: b.amount,
             unit: '₹',
-            isCovered: true
-          })) : []
+            isCovered: true,
+          }));
+        }
+
+        const mappedPolicy: ParsedPolicy = {
+          ...temp,
+          totalSumInsured,
+          insurer,
+          policyName,
+          coverage: temp.coverage || {
+            totalCoverage: totalSumInsured,
+            accidentalCoverage: 0,
+            naturalDeath: 0,
+            hospitalization: 0,
+            criticalIllness: 0,
+          },
+          generalConditions: Array.isArray(temp.insights)
+            ? temp.insights
+            : Array.isArray(temp.generalConditions)
+              ? temp.generalConditions
+              : [],
+          exclusions,
+          coverages,
         };
-        
+
         setPolicyData(mappedPolicy);
       } catch (err: any) {
         console.error('Fetch error, falling back to LIC data:', err);
-        // Fallback to default LIC data on fetch failure
         setPolicyData((samplePolicies[provider] as any) || samplePolicies['lic']);
-        // We don't set error here because we are providing a fallback
       } finally {
         setLoading(false);
       }
     }
     fetchPolicy();
+
+    const onPolicyUpdate = () => fetchPolicy();
+    window.addEventListener('surepath_policy_updated', onPolicyUpdate);
+    return () => window.removeEventListener('surepath_policy_updated', onPolicyUpdate);
   }, [mode]);
 
   useEffect(() => {
