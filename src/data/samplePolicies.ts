@@ -36,9 +36,11 @@ export const samplePolicies: { [key: string]: ParsedPolicy } = {
       { name: "Critical Illness", amount: 0, unit: "₹", isCovered: false }
     ],
     exclusions: [
-      { title: "Pre-existing Conditions", description: "Not covered for first 48 months", severity: "high" },
-      { title: "Hazardous Sports", description: "Injuries arising from hazardous sports", severity: "medium" },
-      { title: "Substance Abuse", description: "Treatment for substance abuse", severity: "high" }
+      { title: "Pre-existing Diseases (PED) within Waiting Period", description: "Claims related to diabetes, hypertension, or prior conditions may be completely rejected if filed before the 2–4 year waiting period.", severity: "high" },
+      { title: "Non-disclosure of Medical History", description: "If any past illness or treatment is not disclosed, the insurer can reduce payout or reject the claim after investigation.", severity: "medium" },
+      { title: "Consumables & Non-medical Expenses", description: "Items like gloves, PPE kits, syringes, and admin charges are not covered, reducing final claim by 10–25%.", severity: "high" },
+      { title: "Specific Illness Waiting Period (e.g., Hernia, Cataract)", description: "These treatments are only covered after 1–2 years, leading to full out-of-pocket expenses if claimed early.", severity: "medium" },
+      { title: "Room Rent Limit Breach", description: "Choosing a room above eligibility can trigger proportionate deductions across the entire bill, sometimes cutting claims by 30–60%.", severity: "high" }
     ],
     generalConditions: [
       "Good base coverage for hospitalization.",
@@ -51,6 +53,13 @@ export const samplePolicies: { [key: string]: ParsedPolicy } = {
     policyName: "Optima Secure",
     insurer: "HDFC ERGO",
     totalSumInsured: 1000000,
+    coverage: {
+      totalCoverage: 1000000,
+      accidentalCoverage: 1000000,
+      naturalDeath: 0,
+      hospitalization: 1000000,
+      criticalIllness: 0
+    },
     coverages: [
       { name: "Room Rent (No Limit)", amount: "No cap", unit: "", isCovered: true },
       { name: "ICU Charges", amount: "No cap", unit: "", isCovered: true },
@@ -77,6 +86,13 @@ export const samplePolicies: { [key: string]: ParsedPolicy } = {
     policyName: "Arogya Shield",
     insurer: "SBI Life Insurance",
     totalSumInsured: 750000,
+    coverage: {
+      totalCoverage: 750000,
+      accidentalCoverage: 500000,
+      naturalDeath: 500000,
+      hospitalization: 750000,
+      criticalIllness: 0
+    },
     coverages: [
       { name: "Hospitalization Expenses", amount: 750000, unit: "₹", isCovered: true },
       { name: "Pre/Post Hospitalization", amount: 60, unit: "days/90 days", isCovered: true },
@@ -103,6 +119,13 @@ export const samplePolicies: { [key: string]: ParsedPolicy } = {
     policyName: "iShield (Combi Plan)",
     insurer: "ICICI Prudential",
     totalSumInsured: 1000000,
+    coverage: {
+      totalCoverage: 6000000,
+      accidentalCoverage: 1000000,
+      naturalDeath: 5000000,
+      hospitalization: 1000000,
+      criticalIllness: 0
+    },
     coverages: [
       { name: "Hospitalization", amount: 1000000, unit: "₹", isCovered: true },
       { name: "Pre/Post Hospitalization", amount: 60, unit: "days", isCovered: true },

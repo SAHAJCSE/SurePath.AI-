@@ -17,39 +17,40 @@
   <b><a href="https://sure-path-ai10x.vercel.app/">View Live Application Environment</a></b>
 </div>
 
-## 📌 Executive Summary
+## 🚨 Problem Statement
 
-The insurance sector is characterized by dense, complex documentation that historically alienates the end consumer. **SurePath AI** addresses this systemic asymmetry by serving as a localized, AI-driven extraction and intelligence layer. It transforms high-density "legalese" into deterministic, structured data objects that power an intuitive, real-time user dashboard. 
+The insurance sector is characterized by dense, complex documentation that historically alienates the end consumer. Policyholders struggle with high-density "legalese", making it difficult to understand their true coverage, limits, and exclusions. This systemic asymmetry between insurance providers and consumers leads to confusion, frustration, and unexpected out-of-pocket expenses during the claims process.
 
-Built with enterprise scalability in mind, SurePath AI bridges the computational divide between non-structured legal formats (PDFs) and strict analytical visualization (Recharts), delivering actionable policy metrics—such as deterministic limits, explicit exclusions, and automated claim scenario simulations—in seconds.
+## 💡 Solution Overview
 
-## 🚀 System Architecture & Capabilities
+**SurePath AI** addresses this problem by serving as a localized, AI-driven extraction and intelligence layer. It transforms non-structured, complex legal documents (PDFs) into deterministic, structured data objects that power an intuitive, real-time user dashboard. 
 
-SurePath AI implements a strict client-server decoupling with advanced Natural Language Processing (NLP) injected via Google's Gemini 2.0 construct.
+Built with enterprise scalability in mind, SurePath AI delivers actionable policy metrics in seconds. Users can instantly view deterministic limits, explicit exclusions, and interact with automated claim scenario simulations to understand their financial exposure before an incident occurs.
 
-- **Deterministic Data Extraction:** Utilizes a highly constrained Master Prompt pipeline to force Gemini to extract PDF metadata strictly matching defined Typescript schemas, effectively neutralizing LLM hallucination risks.
-- **Dynamic Recharts Data-Binding:** Real-time integration mapping generated JSON arrays to pie charts and bar configurations, cleanly splitting sub-limits into accessible UI elements.
-- **Client-Side Simulation Engine:** Rather than relying on static mockups, the simulation engine calculates financial exposure based on real-time coverage boundaries and copay restrictions extracted natively from the document.
-- **Frontend Fallback Resiliency:** Engineered with automated offline-fallback patterns. If backend communication severs during PDF transmission, the interface intelligently auto-maps to predefined deterministic mock payloads (e.g. `Jeevan Shagun`) minimizing catastrophic UX crashes.
+### System Architecture & Capabilities
+- **Deterministic Data Extraction:** Utilizes a highly constrained Master Prompt pipeline to force Gemini to extract PDF metadata strictly matching defined Typescript schemas, neutralizing LLM hallucination risks.
+- **Dynamic Recharts Data-Binding:** Real-time integration mapping generated JSON arrays to pie charts and bar configurations.
+- **Client-Side Simulation Engine:** Calculates financial exposure based on real-time coverage boundaries and copay restrictions extracted natively from the document.
+- **Frontend Fallback Resiliency:** Engineered with automated offline-fallback patterns minimizing catastrophic UX crashes.
 - **Browser-Level Programmatic I18n:** Automated Hindi translations powered by explicit DOM manipulators interacting directly with the Google Translate programmatic API.
 
-## 🛠️ Technological Infrastructure
+## 🛠️ Technical Details (Tech Stack)
 
 ### Client Application (Frontend)
 - **Framework:** React 19 optimized with Vite for Rapid Hot Module Replacement (HMR).
 - **Styling:** Fully bespoke Vanilla Tailwind CSS implementation focusing on modern glassmorphism, responsive constraint layouts, and semantic design tokens.
-- **Animation Layer:** Framer Motion (v12) deployed for lifecycle state handling (`AnimatePresence`) and premium micro-interactions.
+- **Animation Layer:** Framer Motion (v12) deployed for lifecycle state handling (`AnimatePresence`).
 - **Data Visualization:** Recharts integration for responsive SVGs driven directly by AI payloads.
 
 ### Server Application (Backend)
 - **Runtime:** Node.js encapsulated by the Express micro-framework.
 - **Parsing Engine:** `pdf-parse` combined with custom regex text normalization algorithms.
-- **AI Integration:** `@google/genai` executing strict parameterized extraction commands.
+- **AI Integration:** Google Gemini 2.0 (`@google/genai`) executing strict parameterized extraction commands.
 - **Concurrency:** `concurrently` enabling isolated thread processes during local development.
 
 ---
 
-## ⚙️ Development Environment Setup
+## ⚙️ Execution Commands
 
 Ensure your local machine operates on **Node.js (v18+)** and that you possess a valid [Gemini API Key](https://aistudio.google.com/app/apikey).
 
@@ -59,7 +60,7 @@ git clone https://github.com/SAHAJCSE/SurePath.AI-.git
 cd surepath.ai
 ```
 
-### 2. Dependency Resolution
+### 2. Install Dependencies
 ```bash
 # Resolve all multi-environment dependencies securely
 npm install
@@ -73,12 +74,19 @@ VITE_API_BASE=http://localhost:5050
 PORT=5050
 ```
 
-### 4. Concurrent Bootstrapping
+### 4. Build the Project
+```bash
+# Compile and build the frontend application for production
+npm run build
+```
+
+### 5. Run the Project Locally
 Execute the initialization script to boot both the React client and the Express backend simultaneously.
 ```bash
+# Start both the frontend (Vite) and backend (Express) concurrently
 npm run dev:full
 ```
-*The local development proxy is configured for routing via `http://localhost:3000`.*
+*The local development proxy is configured for routing via `http://localhost:5173`.*
 
 ---
 

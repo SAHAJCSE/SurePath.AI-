@@ -9,9 +9,9 @@ interface Props {
 export default function ExclusionsHighlighter({ policy }: Props) {
   // Use parsed exclusions or fall back to realistic demo data if empty
   const exclusions = policy.exclusions.length > 0 ? policy.exclusions : [
-    { item: 'Robotic Surgery', reason: 'Commonly capped at ₹2.5 Lakhs regardless of sum insured.', severity: 'High' },
-    { item: 'Genetic Disorders', reason: 'Standard 48-month waiting period applies.', severity: 'Medium' },
-    { item: 'Organ Donor Expenses', reason: 'Only hospitalization for donor is covered, not surgery.', severity: 'High' }
+    { title: 'Robotic Surgery', description: 'Commonly capped at ₹2.5 Lakhs regardless of sum insured.', severity: 'high' as const },
+    { title: 'Genetic Disorders', description: 'Standard 48-month waiting period applies.', severity: 'medium' as const },
+    { title: 'Organ Donor Expenses', description: 'Only hospitalization for donor is covered, not surgery.', severity: 'high' as const }
   ];
 
   return (
@@ -36,16 +36,16 @@ export default function ExclusionsHighlighter({ policy }: Props) {
               <div className="flex justify-between items-start mb-2">
                  <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full bg-error animate-pulse" />
-                   <span className="font-bold text-sm text-on-surface">{exc.item}</span>
+                   <span className="font-bold text-sm text-on-surface">{exc.title}</span>
                  </div>
                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-widest ${
-                   exc.severity === 'High' ? 'bg-error/10 text-error border-error/20' : 'bg-orange-100 text-orange-700 border-orange-200'
+                   exc.severity === 'high' ? 'bg-error/10 text-error border-error/20' : 'bg-orange-100 text-orange-700 border-orange-200'
                  }`}>
-                   {exc.severity || 'Medium'} RISK
+                   {exc.severity || 'medium'} RISK
                  </span>
               </div>
               <p className="text-[11px] text-on-surface-variant leading-relaxed font-medium">
-                {exc.reason}
+                {exc.description}
               </p>
               <div className="mt-2 text-[9px] font-bold text-error flex items-center gap-1 uppercase tracking-tight">
                 <Zap size={10} />
