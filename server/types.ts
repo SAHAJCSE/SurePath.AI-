@@ -117,4 +117,19 @@ export type StoredPolicy = {
   lastAnalysis?: PolicyAnalysis;
 };
 
+export interface ClaimCheckRequest {
+  policyId?: string;
+  scenario: string;
+  policy?: any; // ParsedPolicy 
+  provider?: string;
+}
+
+export interface ClaimCheckResult {
+  claim_status: 'approved' | 'partial' | 'rejected';
+  approval_chance: number;
+  risk_level: 'low' | 'medium' | 'high';
+  reason: string;
+};
+
+
 

@@ -1,0 +1,35 @@
+## Claim Approval Checker Prompt (Active)
+
+**File:** server/gemini.ts - checkClaimApproval()
+
+**Purpose:** Analyze user medical scenario against policy JSON, return structured claim approval probability.
+
+**Strict Output:** JSON only
+```
+{
+"claim_status": "approved | partial | rejected", 
+"approval_chance": 0-100,
+"risk_level": "low | medium | high",
+"reason": "1-2 line plain English explanation"
+}
+```
+
+**Key Logic:**
+- Waiting period → rejected (0-39%)
+- Coverage limits → partial (40-79%)
+- Full coverage → approved (80-100%)
+- Focus: financial impact, no jargon
+
+**Example Input:**
+Scenario: "Diabetes treatment in first year"
+Policy: LIC policy with 48-month PED waiting
+
+**Example Output:**
+```
+{"claim_status": "rejected","approval_chance": 10,"risk_level": "high","reason": "Waiting period for pre-existing conditions not completed."}
+```
+
+**Model:** gemini-2.0-flash-exp, temp=0.1, JSON mode
+
+**Demo Fallback:** Always available when no API key.
+

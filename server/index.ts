@@ -4,7 +4,8 @@ import cors from 'cors';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
 import { extractTextFromUpload, normalizeText } from './text-extract';
-import { assistantChat, generateSmartSummary, parsePolicyDetailed, analyzePolicyMasterPrompt } from './gemini';
+import { assistantChat, generateSmartSummary, parsePolicyDetailed, analyzePolicyMasterPrompt, checkClaimApproval } from './gemini';
+import type { ClaimCheckRequest, ClaimCheckResult } from './types';
 import { getPolicy, putPolicy, updatePolicy } from './storage';
 import { validatePolicy } from './validator';
 import { simulate } from './simulator';
@@ -201,7 +202,7 @@ app.post('/api/simulate', async (req, res) => {
       const result = simulate(effectivePolicy, effectiveScenario);
       return res.json(result);
     }
-    
+
     return res.status(400).json({ error: 'policy and bill OR policyData and scenario required.' });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Simulation failed.' });
@@ -226,6 +227,25 @@ app.post('/api/assistant/chat', async (req, res) => {
     res.json({ reply, usesPolicy: Boolean(policy) });
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Assistant failed.' });
+  }
+});
+
+/**
+ * Check claim approval probability
+ * Body: { policyId, scenario, policy?, provider? }
+ */
+app.post('/api/check-claim', async (req, res) => {
+  try {
+    const body: ClaimCheckRequest = req.body;
+
+    if (!body.scenario || !body.scenario.trim()) {
+      return res.status(400).json({ error: 'Scenario description required' });
+    }
+
+    const result = await checkClaimApproval(body);
+    res.json({ result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Claim analysis failed' });
   }
 });
 
