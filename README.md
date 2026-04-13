@@ -1,14 +1,15 @@
 
-
-# SurePath AI
+# 🚀 SurePath AI
 
 ### Enterprise-Grade Intelligence for Insurance Policy Analysis
 
-  [License: MIT](https://opensource.org/licenses/MIT)
-  [Frontend](https://reactjs.org/)
-  [Backend](https://nodejs.org/)
-  [AI Engine](https://ai.google.dev/)
-  [Build](https://vitejs.dev/)
+<p>
+  <a href="https://opensource.org/licenses/MIT">MIT License</a> |
+  <a href="https://reactjs.org/">Frontend</a> |
+  <a href="https://nodejs.org/">Backend</a> |
+  <a href="https://ai.google.dev/">AI Engine</a> |
+  <a href="https://vitejs.dev/">Build</a>
+</p>
 
 
 ![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=white)
@@ -37,18 +38,7 @@ Insurance policies are complex and filled with dense legal language. Most users 
   <a href="https://vitejs.dev/">Build</a>
 </p>
 
-<p>
-  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Bundler-Vite-646CFF?logo=vite&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Styling-TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js&logoColor=white"/>
-  <img src="https://img.shields.io/badge/API-Express-black?logo=express"/>
-  <img src="https://img.shields.io/badge/AI-Gemini%202.0-blue?logo=google"/>
-  <img src="https://img.shields.io/badge/Status-Active-success"/>
-  <img src="https://img.shields.io/badge/Build-Passing-brightgreen"/>
-</p>
 
----
 
 ## 🌐 Live Application
 <p>
@@ -58,17 +48,7 @@ Insurance policies are complex and filled with dense legal language. Most users 
 </p>
 
 ---
-# 🚀 SurePath AI
 
-### Enterprise-Grade Intelligence for Insurance Policy Analysis
-
-<p>
-  <a href="https://opensource.org/licenses/MIT">MIT License</a> |
-  <a href="https://reactjs.org/">Frontend</a> |
-  <a href="https://nodejs.org/">Backend</a> |
-  <a href="https://ai.google.dev/">AI Engine</a> |
-  <a href="https://vitejs.dev/">Build</a>
-</p>
 
 <p>
   <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB"/>
