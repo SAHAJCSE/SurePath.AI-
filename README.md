@@ -11,46 +11,55 @@
   [Build](https://vitejs.dev/)
 
 
-
+![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Bundler-Vite-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Styling-TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/API-Express-black?logo=express)
+![Gemini AI](https://img.shields.io/badge/AI-Gemini%202.0-blue?logo=google)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 ---
 
 **[View Live Application Environment](https://sure-path-ai10x.vercel.app/)**
 
-## 🚨 Problem Statement
+🚨 Problem Statement
 
-The insurance sector is characterized by dense, complex documentation that historically alienates the end consumer. Policyholders struggle with high-density "legalese", making it difficult to understand their true coverage, limits, and exclusions. This systemic asymmetry between insurance providers and consumers leads to confusion, frustration, and unexpected out-of-pocket expenses during the claims process.
+Insurance policies are complex and filled with dense legal language. Most users cannot clearly understand coverage, exclusions, or limits—leading to confusion and unexpected expenses during claims.
 
-## 💡 Solution Overview
+💡 Solution Overview
 
-**SurePath AI** addresses this problem by serving as a localized, AI-driven extraction and intelligence layer. It transforms non-structured, complex legal documents (PDFs) into deterministic, structured data objects that power an intuitive, real-time user dashboard. 
+SurePath AI converts complex insurance documents into simple, structured insights using AI.
 
-Built with enterprise scalability in mind, SurePath AI delivers actionable policy metrics in seconds. Users can instantly view deterministic limits, explicit exclusions, and interact with automated claim scenario simulations to understand their financial exposure before an incident occurs.
+📄 Extracts key policy data from PDFs
+📊 Visualizes coverage & exclusions instantly
+🧠 Predicts claim approval chances
+💸 Shows real out-of-pocket costs
+⚠️ Highlights hidden risks & rejection causes
 
-### System Architecture & Capabilities
+Transforms confusing policies → clear financial decisions in seconds
 
-- **Deterministic Data Extraction:** Utilizes a highly constrained Master Prompt pipeline to force Gemini to extract PDF metadata strictly matching defined Typescript schemas, neutralizing LLM hallucination risks.
-- **Dynamic Recharts Data-Binding:** Real-time integration mapping generated JSON arrays to pie charts and bar configurations.
-- **Client-Side Simulation Engine:** Calculates financial exposure based on real-time coverage boundaries and copay restrictions extracted natively from the document.
-- **Frontend Fallback Resiliency:** Engineered with automated offline-fallback patterns minimizing catastrophic UX crashes.
-- **Browser-Level Programmatic I18n:** Automated Hindi translations powered by explicit DOM manipulators interacting directly with the Google Translate programmatic API.
+✨ Key Features (Quick View)
+🧠 Claim Approval Predictor → Know approval chance before filing
+💸 Cost Simulator → See what you actually pay
+📊 Visual Dashboard → Charts for coverage & limits
+⚠️ Risk Detector → Flags hidden exclusions
+🔍 Scenario Testing → Test real-life situations
 
-## 🛠️ Technical Details (Tech Stack)
+🛠️ Technical Details (Tech Stack)
 
-### Client Application (Frontend)
+👳‍♀️Client Application (Frontend)
+➡️ Framework: React 19 optimized with Vite for Rapid Hot Module Replacement (HMR).
+➡️ Styling: Fully bespoke Vanilla Tailwind CSS implementation focusing on modern glassmorphism, responsive constraint layouts, and semantic design tokens.
+➡️ Animation Layer: Framer Motion (v12) deployed for lifecycle state handling (AnimatePresence).
+➡️ Data Visualization: Recharts integration for responsive SVGs driven directly by AI payloads.
 
-- **Framework:** React 19 optimized with Vite for Rapid Hot Module Replacement (HMR).
-- **Styling:** Fully bespoke Vanilla Tailwind CSS implementation focusing on modern glassmorphism, responsive constraint layouts, and semantic design tokens.
-- **Animation Layer:** Framer Motion (v12) deployed for lifecycle state handling (`AnimatePresence`).
-- **Data Visualization:** Recharts integration for responsive SVGs driven directly by AI payloads.
-
-### Server Application (Backend)
-
-- **Runtime:** Node.js encapsulated by the Express micro-framework.
-- **Parsing Engine:** `pdf-parse` combined with custom regex text normalization algorithms.
-- **AI Integration:** Google Gemini 2.0 (`@google/genai`) executing strict parameterized extraction commands.
-- **Concurrency:** `concurrently` enabling isolated thread processes during local development.
-
----
+✈️Server Application (Backend)
+➡️ Runtime: Node.js encapsulated by the Express micro-framework.
+➡️ Parsing Engine: pdf-parse combined with custom regex text normalization algorithms.
+➡️ AI Integration: Google Gemini 2.0 (@google/genai) executing strict parameterized extraction commands.
+➡️ Concurrency: concurrently enabling isolated thread processes during local development.
 
 ## ⚙️ Execution Commands
 
