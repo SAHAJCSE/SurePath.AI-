@@ -1,302 +1,229 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { Locale, ScenarioId, ScenarioResult, SmartSummary, PolicyAnalysis, ClaimCheckRequest, ClaimCheckResult } from './types.js';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import type { ClaimCheckRequest, ClaimCheckResult, Locale, PolicyAnalysis, ScenarioId, ScenarioResult, SmartSummary } from './types.js';
 
-function safeJsonParse(text: string): any | undefined {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) return;
-  const candidate = text.slice(start, end + 1);
-  try {
-    return JSON.parse(candidate);
-  } catch {
-    return;
-  }
+function toLocale(input?: string): Locale {
+  return input === 'hi' ? 'hi' : 'en';
 }
 
-function clamp01to100(n: any, fallback: number) {
+function clamp01to100(n: unknown, fallback: number) {
   const x = typeof n === 'number' ? n : Number(n);
   if (!Number.isFinite(x)) return fallback;
   return Math.max(0, Math.min(100, Math.round(x)));
 }
 
-function toLocale(locale?: string): Locale {
-  return locale === 'hi' ? 'hi' : 'en';
+type SummaryOpts = { rawText: string; locale?: Locale; provider?: string; policyName?: string };
+type AnalysisOpts = { rawText: string; provider?: string; policyName?: string };
+type ChatOpts = {
+  messages: Array<{ role: 'user' | 'assistant'; text: string }>;
+  provider?: string;
+  rawText?: string;
+};
+type SimulateOpts = { scenarioId: ScenarioId; locale?: Locale };
+
+function has(text: string, ...needles: string[]) {
+  const lower = text.toLowerCase();
+  return needles.some((n) => lower.includes(n.toLowerCase()));
 }
 
-// ... [all existing functions remain unchanged - generateSmartSummary, analyzePolicyMasterPrompt, simulateScenario, assistantChat, demo functions] ...
-
-// NEW: Claim Approval Checker
-export async function checkClaimApproval(opts: ClaimCheckRequest): Promise<ClaimCheckResult> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const locale = toLocale(opts.provider); // reuse locale logic
-
-  // Demo fallback first (reliable)
-  const demoResult = getDemoClaimResult(opts.scenario, locale);
-  if (!apiKey) {
-    return demoResult;
-  }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-
-  const SYSTEM_PROMPT = opts.analystInstructions?.trim() || `You are an expert health insurance claim analyst AI.
-
-Your task is to evaluate whether a user's claim will be approved based on their described medical situation and the provided insurance policy.
-
-Think like a real insurance company reviewer - strict, realistic, and policy-driven.
-
-INPUT:
-- User's medical situation (free text)
-- Policy details (coverage, exclusions, waiting period, sum insured)
-
-OUTPUT (STRICT JSON FORMAT):
-{
-  "status": "APPROVED | REJECTED | UNCERTAIN",
-  "approvalChance": number (0-100),
-  "riskLevel": "Low | Medium | High",
-  "reason": "Clear, simple explanation in 1-2 lines",
-  "detailedAnalysis": "Short paragraph explaining decision using policy terms",
-  "keyFactors": [
-    "Factor 1",
-    "Factor 2",
-    "Factor 3"
-  ],
-  "userAdvice": "What user should do next (e.g., documents, precautions)"
-}
-
-DECISION LOGIC:
-- Accidents -> HIGH approval chance unless explicitly excluded
-- Pre-existing diseases -> Check waiting period strictly
-- Recent policy (< waiting period) -> Increase rejection probability
-- Cosmetic / non-medical / excluded treatments -> REJECT
-- Missing or unclear info -> mark as UNCERTAIN (not APPROVED)
-
-TONE:
-- Simple, human-friendly
-- Avoid technical jargon unless needed
-- Be honest - do NOT overpromise approval
-
-IMPORTANT:
-- Output must ALWAYS be valid JSON
-- No extra text outside JSON`;
-
-  const policyText = opts.policy
-    ? JSON.stringify(opts.policy, null, 2).slice(0, 20000)
-    : 'No policy data available';
-
-  const userPrompt = [
-    `Locale: ${locale}`,
-    `User scenario: ${opts.scenario}`,
-    `Policy provider: ${opts.provider || 'unknown'}`,
-    `Policy JSON: ${policyText}`,
-    '',
-    'Analyze and respond with JSON only:'
-  ].join('\n\n');
-
-  try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-    const result = await model.generateContent({
-      contents: [
-        { role: 'model', parts: [{ text: SYSTEM_PROMPT }] },
-        { role: 'user', parts: [{ text: userPrompt }] }
-      ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.1,
-      }
-    });
-
-    const response = await result.response;
-    const parsed = safeJsonParse(response.text());
-
-    if (parsed?.status) {
-      return {
-        status: parsed.status === 'APPROVED' || parsed.status === 'REJECTED' || parsed.status === 'UNCERTAIN' ? parsed.status : 'UNCERTAIN',
-        approvalChance: clamp01to100(parsed.approvalChance, 50),
-        riskLevel: parsed.riskLevel === 'Low' || parsed.riskLevel === 'High' ? parsed.riskLevel : 'Medium',
-        reason: String(parsed.reason || 'We could not validate all policy conditions.'),
-        detailedAnalysis: String(parsed.detailedAnalysis || 'Decision based on waiting periods, exclusions, and coverage limits in the policy.'),
-        keyFactors: Array.isArray(parsed.keyFactors) ? parsed.keyFactors.slice(0, 3).map((x: any) => String(x)) : ['Policy exclusions', 'Waiting period rules', 'Medical necessity and treatment type'],
-        userAdvice: String(parsed.userAdvice || 'Share complete hospital records and policy documents before claim filing.')
-      };
-    }
-  } catch (error) {
-    console.error('Gemini claim analysis failed:', error);
-  }
-
-  // Fallback to demo
-  return demoResult;
-}
-
-function getDemoClaimResult(scenario: string, locale: Locale): ClaimCheckResult {
-  const lower = scenario.toLowerCase();
-
-  if (lower.includes('diabetes') || lower.includes('first year') || lower.includes('pre-existing') || lower.includes('PED')) {
-    return {
-      status: 'REJECTED',
-      approvalChance: 10,
-      riskLevel: 'High',
-      reason: 'Pre-existing condition is likely inside waiting period.',
-      detailedAnalysis: 'Most health policies apply a strict waiting period for pre-existing diseases. If policy age is below that period, claim rejection is highly likely.',
-      keyFactors: ['Pre-existing disease', 'Waiting period not completed', 'Policy age check required'],
-      userAdvice: 'Submit policy schedule and prior medical records to verify waiting period completion.'
-    };
-  }
-
-  if (lower.includes('accident') || lower.includes('injury')) {
-    return {
-      status: 'APPROVED',
-      approvalChance: 95,
-      riskLevel: 'Low',
-      reason: 'Accident-related hospitalization is usually covered without waiting period.',
-      detailedAnalysis: 'Accidental treatment is generally eligible immediately unless a specific accident-related exclusion applies in the policy wording.',
-      keyFactors: ['Accidental event', 'No waiting period for accidents', 'No explicit exclusion identified'],
-      userAdvice: 'Keep FIR/incident report, admission notes, and itemized bills ready for faster processing.'
-    };
-  }
-
-  if (lower.includes('surgery') || lower.includes('icu') || lower.includes('hospital')) {
-    return {
-      status: 'UNCERTAIN',
-      approvalChance: 65,
-      riskLevel: 'Medium',
-      reason: 'Hospital claim may be paid partly based on sub-limits and exclusions.',
-      detailedAnalysis: 'Even when hospitalization is covered, room rent caps, consumables exclusion, and eligibility checks can reduce settlement amount.',
-      keyFactors: ['Hospitalization coverage scope', 'Room rent/sub-limit caps', 'Consumables/exclusions'],
-      userAdvice: 'Get a pre-authorization estimate and keep itemized bills and discharge summary.'
-    };
-  }
+export async function generateSmartSummary(opts: SummaryOpts): Promise<SmartSummary> {
+  const locale = toLocale(opts.locale);
+  const text = opts.rawText || '';
+  const complex = Math.min(90, 40 + Math.floor(text.length / 2000));
+  const riskScore = has(text, 'co-pay', 'copay', 'sub-limit', 'waiting period') ? 52 : 72;
+  const verdict = riskScore >= 70 ? 'yes' : riskScore >= 45 ? 'maybe' : 'no';
 
   return {
-    status: 'UNCERTAIN',
-    approvalChance: 55,
-    riskLevel: 'Medium',
-    reason: 'Outcome depends on treatment type, exclusions, and waiting period status.',
-    detailedAnalysis: 'Without complete diagnosis timeline and policy clauses, insurer may approve, partially settle, or reject based on exclusions and sub-limits.',
-    keyFactors: ['Medical necessity clarity', 'Exclusion applicability', 'Waiting period and sum insured limits'],
-    userAdvice: 'Share discharge summary, diagnosis date, and full policy wording before filing.'
+    provider: opts.provider || 'Unknown',
+    policyName: opts.policyName || 'Policy Summary',
+    locale,
+    headline: locale === 'hi' ? 'Policy ka seedha summary' : 'Straight policy summary',
+    plainSummary:
+      locale === 'hi'
+        ? 'Policy me coverage aur exclusions dono check karein. Claim ke time waiting period aur sub-limits sabse important hote hain.'
+        : 'Check both coverage and exclusions. Waiting periods and sub-limits are the most important factors during claims.',
+    riskScore,
+    complexityScore: complex,
+    keyNumbers: {
+      accidentCoverage: has(text, 'accident') ? 'Covered' : 'Check schedule',
+      naturalDeathCoverage: has(text, 'death') ? 'As per policy terms' : 'Not explicit',
+      hospitalizationCoverage: has(text, 'hospital') ? 'Covered with conditions' : 'Not explicit',
+    },
+    clauses: [
+      { title: 'Waiting Period', whyItMatters: 'Claims in waiting period are commonly rejected.' },
+      { title: 'Sub-limits', whyItMatters: 'Room rent and category caps can reduce payout.' },
+      { title: 'Exclusions', whyItMatters: 'Excluded procedures are not payable even with active policy.' },
+    ],
+    coverage: [
+      { id: 'accident', label: 'Accident hospitalization', status: 'covered', strength: 85, rationale: 'Usually covered from day one unless excluded.' },
+      { id: 'ped', label: 'Pre-existing diseases', status: 'conditional', strength: 35, rationale: 'Depends on waiting period completion.' },
+      { id: 'cosmetic', label: 'Cosmetic treatment', status: 'not_covered', strength: 10, rationale: 'Commonly excluded unless medically necessary.' },
+    ],
+    shouldIBuy: {
+      verdict,
+      reason: verdict === 'yes' ? 'Balanced coverage with manageable risk conditions.' : verdict === 'maybe' ? 'Useful but check caps and waiting periods carefully.' : 'Too many constraints for reliable claim outcomes.',
+    },
   };
 }
 
-// NEW CLAIM CHECKER FUNCTION
-export async function checkClaimApproval(opts: ClaimCheckRequest): Promise<ClaimCheckResult> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const locale = toLocale(opts.provider || 'en');
+export async function analyzePolicyMasterPrompt(opts: AnalysisOpts): Promise<PolicyAnalysis> {
+  const text = opts.rawText || '';
+  const hasCopay = has(text, 'co-pay', 'copay');
+  const hasWaiting = has(text, 'waiting period', 'pre-existing');
 
-  // Demo fallback
-  if (!apiKey) {
-    return getDemoClaimResult(opts.scenario, locale);
-  }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-
-  const SYSTEM_PROMPT = opts.analystInstructions?.trim() || \`You are an expert health insurance claim analyst AI.
-
-Your task is to evaluate whether a user's claim will be approved based on their described medical situation and the provided insurance policy.
-
-Think like a real insurance company reviewer - strict, realistic, and policy-driven.
-
-INPUT:
-- User's medical situation (free text)
-- Policy details (coverage, exclusions, waiting period, sum insured)
-
-OUTPUT (STRICT JSON FORMAT):
-{
-  "status": "APPROVED | REJECTED | UNCERTAIN",
-  "approvalChance": number (0-100),
-  "riskLevel": "Low | Medium | High",
-  "reason": "Clear, simple explanation in 1-2 lines",
-  "detailedAnalysis": "Short paragraph explaining decision using policy terms",
-  "keyFactors": [
-    "Factor 1",
-    "Factor 2",
-    "Factor 3"
-  ],
-  "userAdvice": "What user should do next (e.g., documents, precautions)"
+  return {
+    policyName: opts.policyName || 'Health Policy',
+    insurer: opts.provider || 'Unknown Insurer',
+    totalSumInsured: 500000,
+    coverage: {
+      totalCoverage: 500000,
+      accidentalCoverage: 500000,
+      naturalDeath: 0,
+      hospitalization: 500000,
+      criticalIllness: has(text, 'critical illness') ? 200000 : 0,
+    },
+    coverages: [
+      { name: 'Hospitalization', amount: 500000, unit: 'INR', isCovered: true },
+      { name: 'Accident treatment', amount: 500000, unit: 'INR', isCovered: true },
+      { name: 'Cosmetic procedures', amount: 0, unit: 'INR', isCovered: false },
+    ],
+    exclusions: [
+      {
+        title: 'Cosmetic and aesthetic treatment',
+        description: 'Non-medically required cosmetic treatment is excluded.',
+        severity: 'high',
+        clause_text: 'Cosmetic treatment not payable unless medically necessary.',
+        page_number: 'NA',
+        confidence: 'high',
+      },
+      {
+        title: 'Waiting period restrictions',
+        description: 'Pre-existing diseases need waiting period completion.',
+        severity: 'high',
+        clause_text: 'Pre-existing claims are restricted until waiting period ends.',
+        page_number: 'NA',
+        confidence: hasWaiting ? 'high' : 'medium',
+      },
+    ],
+    generalConditions: [
+      hasCopay ? 'Co-pay applies as per policy schedule.' : 'No explicit co-pay found in parsed text.',
+      'Network/non-network reimbursement rules may affect settlement speed.',
+      'Original bills and discharge summary are required for claim processing.',
+    ],
+    decision: {
+      verdict: hasCopay || hasWaiting ? 'CAUTION' : 'BUY',
+      risk_score: hasCopay || hasWaiting ? 58 : 76,
+      reasons: hasCopay || hasWaiting ? ['Contains payout constraints (co-pay/waiting period).', 'Verify exclusions before purchase.'] : ['Coverage looks balanced for hospitalization claims.'],
+    },
+  };
 }
 
-DECISION LOGIC:
-- Accidents -> HIGH approval chance unless explicitly excluded
-- Pre-existing diseases -> Check waiting period strictly
-- Recent policy (< waiting period) -> Increase rejection probability
-- Cosmetic / non-medical / excluded treatments -> REJECT
-- Missing or unclear info -> mark as UNCERTAIN (not APPROVED)
-
-TONE:
-- Simple, human-friendly
-- Avoid technical jargon unless needed
-- Be honest - do NOT overpromise approval
-
-IMPORTANT:
-- Output must ALWAYS be valid JSON
-- No extra text outside JSON\`;
-
-  const policyText = opts.policy ? JSON.stringify(opts.policy, null, 2).slice(0, 20000) : 'No policy';
-
-  const prompt = [\`Scenario: \${opts.scenario}\`, \`Provider: \${opts.provider || 'unknown'}\`, \`Policy: \${policyText}\`].join('\\n\\n');
-
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
-    const result = await model.generateContent(SYSTEM_PROMPT + '\\n\\n' + prompt, {
-      generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
-    });
-
-    const parsed = safeJsonParse(result.response.text());
-    if (parsed?.status) {
-      return {
-        status: parsed.status === 'APPROVED' || parsed.status === 'REJECTED' || parsed.status === 'UNCERTAIN' ? parsed.status : 'UNCERTAIN',
-        approvalChance: clamp01to100(parsed.approvalChance, 50),
-        riskLevel: parsed.riskLevel === 'Low' || parsed.riskLevel === 'High' ? parsed.riskLevel : 'Medium',
-        reason: String(parsed.reason || 'We could not validate all policy conditions.'),
-        detailedAnalysis: String(parsed.detailedAnalysis || 'Decision based on waiting periods, exclusions, and coverage limits in the policy.'),
-        keyFactors: Array.isArray(parsed.keyFactors) ? parsed.keyFactors.slice(0, 3).map((x: any) => String(x)) : ['Policy exclusions', 'Waiting period rules', 'Medical necessity and treatment type'],
-        userAdvice: String(parsed.userAdvice || 'Share complete hospital records and policy documents before claim filing.')
-      };
-    }
-  } catch (e) {
-    console.error('Gemini claim check failed:', e);
-  }
-
-  return getDemoClaimResult(opts.scenario, locale);
+export async function parsePolicyDetailed(opts: AnalysisOpts): Promise<PolicyAnalysis> {
+  return analyzePolicyMasterPrompt(opts);
 }
 
-function getDemoClaimResult(scenario: string, locale: Locale): ClaimCheckResult {
+export async function assistantChat(opts: ChatOpts): Promise<string> {
+  const lastUser = [...opts.messages].reverse().find((m) => m.role === 'user')?.text || '';
+  if (!lastUser.trim()) return 'Please share your question about your policy or claim.';
+  const policyHint = opts.rawText ? 'I also have your uploaded policy context.' : 'Upload a policy for exact clause-based answers.';
+  return `${policyHint} Based on your question, focus on waiting period, exclusions, and claim documents first.`;
+}
+
+export async function simulateScenario(opts: SimulateOpts): Promise<ScenarioResult> {
+  const locale = toLocale(opts.locale);
+  const map: Record<ScenarioId, ScenarioResult> = {
+    bike_accident: {
+      covered: true,
+      amount: 'Likely covered up to admissible hospitalization limits',
+      riskLevel: 'low',
+      steps: ['Inform insurer within 24 hours', 'Submit admission + discharge papers', 'Provide itemized bills'],
+      explanation: locale === 'hi' ? 'Durghatna claims aam taur par cover hote hain.' : 'Accident claims are generally covered.',
+    },
+    alcohol_accident: {
+      covered: false,
+      amount: 'Likely rejected',
+      riskLevel: 'high',
+      steps: ['Review intoxication exclusion', 'Collect all medico-legal documents'],
+      explanation: locale === 'hi' ? 'Intoxication cases mein exclusion lag sakta hai.' : 'Intoxication-related exclusions often apply.',
+    },
+    hospital_admission: {
+      covered: true,
+      amount: 'Covered with sub-limits',
+      riskLevel: 'medium',
+      steps: ['Check room-rent cap', 'Check consumables exclusions'],
+      explanation: locale === 'hi' ? 'Hospital claim mein sub-limits payout kam kar sakte hain.' : 'Sub-limits may reduce final payout.',
+    },
+    natural_death: {
+      covered: false,
+      amount: 'Not a standard health policy benefit',
+      riskLevel: 'medium',
+      steps: ['Verify if rider exists', 'Check policy schedule'],
+      explanation: locale === 'hi' ? 'Natural death cover health plan mein usually nahi hota.' : 'Natural death is usually not covered in health-only plans.',
+    },
+    self_harm: {
+      covered: false,
+      amount: 'Likely excluded',
+      riskLevel: 'high',
+      steps: ['Review self-harm/suicide clause', 'Consult insurer support desk'],
+      explanation: locale === 'hi' ? 'Self-harm exclusions aam hain.' : 'Self-harm exclusions are common.',
+    },
+    cosmetic_surgery: {
+      covered: false,
+      amount: 'Excluded unless medically necessary',
+      riskLevel: 'high',
+      steps: ['Get medical necessity certificate', 'Check reconstructive surgery wording'],
+      explanation: locale === 'hi' ? 'Cosmetic treatment aam taur par excluded hota hai.' : 'Cosmetic treatment is generally excluded.',
+    },
+  };
+  return map[opts.scenarioId];
+}
+
+function getDemoClaimResult(scenario: string): ClaimCheckResult {
   const lower = scenario.toLowerCase();
-  if (lower.includes('diabetes') || lower.includes('first year') || lower.includes('pre-existing')) {
+  if (has(lower, 'cosmetic', 'hair transplant', 'aesthetic')) {
     return {
       status: 'REJECTED',
-      approvalChance: 10,
+      approvalChance: 5,
       riskLevel: 'High',
-      reason: 'Pre-existing condition is likely inside waiting period.',
-      detailedAnalysis: 'Most health policies apply a strict waiting period for pre-existing diseases. If policy age is below that period, claim rejection is highly likely.',
-      keyFactors: ['Pre-existing disease', 'Waiting period not completed', 'Policy age check required'],
-      userAdvice: 'Submit policy schedule and prior medical records to verify waiting period completion.'
+      reason: 'Cosmetic or non-medical treatment is typically excluded.',
+      detailedAnalysis: 'Most health policies exclude cosmetic procedures unless they are medically necessary after trauma or disease.',
+      keyFactors: ['Treatment type is cosmetic', 'Exclusion likely applies', 'Medical necessity proof missing'],
+      userAdvice: 'Share doctor-certified medical necessity and policy wording before filing.',
     };
   }
-  if (lower.includes('accident')) {
+  if (has(lower, 'pre-existing', 'diabetes', 'hypertension', 'ped', 'first year')) {
+    return {
+      status: 'REJECTED',
+      approvalChance: 12,
+      riskLevel: 'High',
+      reason: 'Pre-existing condition appears within waiting period.',
+      detailedAnalysis: 'Claims for pre-existing diseases are usually blocked until the waiting period ends, unless policy terms state otherwise.',
+      keyFactors: ['Pre-existing disease mention', 'Waiting period risk', 'Policy start date needed'],
+      userAdvice: 'Provide policy inception date, PED clause, and past medical records.',
+    };
+  }
+  if (has(lower, 'accident', 'injury', 'fracture', 'trauma')) {
     return {
       status: 'APPROVED',
-      approvalChance: 95,
+      approvalChance: 92,
       riskLevel: 'Low',
-      reason: 'Accident-related hospitalization is usually covered without waiting period.',
-      detailedAnalysis: 'Accidental treatment is generally eligible immediately unless a specific accident-related exclusion applies in the policy wording.',
-      keyFactors: ['Accidental event', 'No waiting period for accidents', 'No explicit exclusion identified'],
-      userAdvice: 'Keep FIR/incident report, admission notes, and itemized bills ready for faster processing.'
+      reason: 'Accident-related treatment is usually covered.',
+      detailedAnalysis: 'Accident hospitalization is typically payable from day one unless an explicit exclusion is triggered.',
+      keyFactors: ['Accidental event', 'No normal waiting period', 'No explicit exclusion in scenario'],
+      userAdvice: 'Submit FIR/incident note, admission records, and itemized hospital bills.',
     };
   }
   return {
     status: 'UNCERTAIN',
     approvalChance: 55,
     riskLevel: 'Medium',
-    reason: 'Outcome depends on treatment type, exclusions, and waiting period status.',
-    detailedAnalysis: 'Without complete diagnosis timeline and policy clauses, insurer may approve, partially settle, or reject based on exclusions and sub-limits.',
-    keyFactors: ['Medical necessity clarity', 'Exclusion applicability', 'Waiting period and sum insured limits'],
-    userAdvice: 'Share discharge summary, diagnosis date, and full policy wording before filing.'
+    reason: 'Insufficient detail to confirm approval confidently.',
+    detailedAnalysis: 'Final outcome depends on diagnosis timeline, exclusions, waiting period status, and admissible limits.',
+    keyFactors: ['Diagnosis clarity', 'Waiting period check', 'Exclusion mapping'],
+    userAdvice: 'Share diagnosis date, treatment plan, and complete policy document for a stronger assessment.',
   };
 }
 
-// Existing exports
-export { generateSmartSummary, analyzePolicyMasterPrompt, simulateScenario, assistantChat, parsePolicyDetailed };
+export async function checkClaimApproval(opts: ClaimCheckRequest): Promise<ClaimCheckResult> {
+  return getDemoClaimResult(opts.scenario);
+}
 
 

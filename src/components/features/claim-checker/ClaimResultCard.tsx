@@ -73,7 +73,7 @@ export const ClaimResultCard = ({ result, loading = false }: Props) => {
         >
             {/* Status Header */}
             <div className="absolute top-4 sm:top-6 left-4 sm:left-6 w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-white to-surface-container-low rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/20">
-                <statusConfig.icon size={24} sm:size={28} className={`${statusConfig.color} drop-shadow-lg`} />
+                <statusConfig.icon className={`size-6 sm:size-7 ${statusConfig.color} drop-shadow-lg`} />
             </div>
 
             {/* Main Content */}

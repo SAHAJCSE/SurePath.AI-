@@ -1,4 +1,4 @@
-import { Exclusion } from '../../types/policy';
+import { Exclusion } from '../types/policy';
 
 export interface FinancialScenario {
   id: string;
