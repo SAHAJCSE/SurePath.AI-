@@ -28,38 +28,156 @@
 
 Insurance policies are complex and filled with dense legal language. Most users cannot clearly understand coverage, exclusions, or limits—leading to confusion and unexpected expenses during claims.
 
-💡 Solution Overview
 
-SurePath AI converts complex insurance documents into simple, structured insights using AI.
+<p>
+  <a href="https://opensource.org/licenses/MIT">License: MIT</a> |
+  <a href="https://reactjs.org/">Frontend</a> |
+  <a href="https://nodejs.org/">Backend</a> |
+  <a href="https://ai.google.dev/">AI Engine</a> |
+  <a href="https://vitejs.dev/">Build</a>
+</p>
 
-📄 Extracts key policy data from PDFs
-📊 Visualizes coverage & exclusions instantly
-🧠 Predicts claim approval chances
-💸 Shows real out-of-pocket costs
-⚠️ Highlights hidden risks & rejection causes
+<p>
+  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Bundler-Vite-646CFF?logo=vite&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Styling-TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js&logoColor=white"/>
+  <img src="https://img.shields.io/badge/API-Express-black?logo=express"/>
+  <img src="https://img.shields.io/badge/AI-Gemini%202.0-blue?logo=google"/>
+  <img src="https://img.shields.io/badge/Status-Active-success"/>
+  <img src="https://img.shields.io/badge/Build-Passing-brightgreen"/>
+</p>
 
-Transforms confusing policies → clear financial decisions in seconds
+---
 
-✨ Key Features (Quick View)
-🧠 Claim Approval Predictor → Know approval chance before filing
-💸 Cost Simulator → See what you actually pay
-📊 Visual Dashboard → Charts for coverage & limits
-⚠️ Risk Detector → Flags hidden exclusions
-🔍 Scenario Testing → Test real-life situations
+## 🌐 Live Application
+<p>
+  <a href="https://sure-path-ai10x.vercel.app/">
+    👉 View Live Demo
+  </a>
+</p>
 
-🛠️ Technical Details (Tech Stack)
+---
+# 🚀 SurePath AI
 
-👳‍♀️Client Application (Frontend)
-➡️ Framework: React 19 optimized with Vite for Rapid Hot Module Replacement (HMR).
-➡️ Styling: Fully bespoke Vanilla Tailwind CSS implementation focusing on modern glassmorphism, responsive constraint layouts, and semantic design tokens.
-➡️ Animation Layer: Framer Motion (v12) deployed for lifecycle state handling (AnimatePresence).
-➡️ Data Visualization: Recharts integration for responsive SVGs driven directly by AI payloads.
+### Enterprise-Grade Intelligence for Insurance Policy Analysis
 
-✈️Server Application (Backend)
-➡️ Runtime: Node.js encapsulated by the Express micro-framework.
-➡️ Parsing Engine: pdf-parse combined with custom regex text normalization algorithms.
-➡️ AI Integration: Google Gemini 2.0 (@google/genai) executing strict parameterized extraction commands.
-➡️ Concurrency: concurrently enabling isolated thread processes during local development.
+<p>
+  <a href="https://opensource.org/licenses/MIT">MIT License</a> |
+  <a href="https://reactjs.org/">Frontend</a> |
+  <a href="https://nodejs.org/">Backend</a> |
+  <a href="https://ai.google.dev/">AI Engine</a> |
+  <a href="https://vitejs.dev/">Build</a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB"/>
+  <img src="https://img.shields.io/badge/Bundler-Vite-646CFF"/>
+  <img src="https://img.shields.io/badge/Styling-TailwindCSS-38B2AC"/>
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933"/>
+  <img src="https://img.shields.io/badge/API-Express-black"/>
+  <img src="https://img.shields.io/badge/AI-Gemini%202.0-blue"/>
+  <img src="https://img.shields.io/badge/Status-Active-success"/>
+</p>
+
+---
+
+## 🌐 Live Application
+
+<p>
+  <a href="https://sure-path-ai10x.vercel.app/">
+    👉 View Live Demo
+  </a>
+</p>
+
+---
+
+
+
+##🚨 Problem Statement
+
+Insurance policies are complex, legal-heavy, and difficult for users to understand. Most people cannot clearly identify what is covered, what is excluded, and what they will actually pay during a claim.
+
+This creates a major gap between insurers and users, often leading to confusion, claim rejection surprises, and financial stress during emergencies.
+
+📉 Core Issues
+Policies are overwhelming and hard to interpret
+Exclusions and limits are hidden in legal text
+No visual or simple explanation of coverage
+Users only understand impact during claim time
+
+---
+
+## 💡 Solution Overview
+
+SurePath AI simplifies insurance documents into structured, easy-to-understand insights using AI.
+
+<ul>
+  <li>
+    <b>📄 Extracts key policy data from PDFs</b><br/>
+    Converts unstructured insurance documents into structured AI-readable data.
+  </li>
+
+  <li>
+    <b>📊 Visualizes coverage & exclusions</b><br/>
+    Turns policy data into charts for instant understanding.
+  </li>
+
+  <li>
+    <b>🧠 Predicts claim approval chances</b><br/>
+    Analyzes policy rules to estimate claim success probability.
+  </li>
+
+  <li>
+    <b>💸 Shows real out-of-pocket cost</b><br/>
+    Calculates actual user expenses after insurance coverage.
+  </li>
+
+  <li>
+    <b>⚠️ Highlights hidden risks</b><br/>
+    Detects exclusions and clauses that may lead to rejection.
+  </li>
+</ul>
+
+<p><b>➡️ Transforms confusing policies into clear financial decisions in seconds</b></p>
+
+---
+
+## ✨ Key Features
+
+<ul>
+  <li>🧠 Claim Approval Predictor → Estimates approval probability before filing</li>
+  <li>💸 Cost Simulator → Shows real payable amount after coverage</li>
+  <li>📊 Visual Dashboard → Displays coverage & exclusions in charts</li>
+  <li>⚠️ Risk Detector → Identifies hidden rejection risks</li>
+  <li>🔍 Scenario Testing → Simulates real-world insurance cases</li>
+</ul>
+
+---
+
+## 🛠️ Technical Stack
+
+<p><b>Frontend</b></p>
+<p>
+➡️ React 19 – Fast UI rendering<br/>
+➡️ Vite – Lightning-fast build system<br/>
+➡️ Tailwind CSS – Utility-first styling<br/>
+➡️ Framer Motion – Smooth animations<br/>
+➡️ Recharts – Data visualization for AI outputs
+</p>
+
+<p><b>Backend</b></p>
+<p>
+➡️ Node.js – Runtime environment<br/>
+➡️ Express – API framework<br/>
+➡️ pdf-parse – Extracts PDF insurance data<br/>
+➡️ Gemini AI – AI-powered policy understanding<br/>
+➡️ concurrently – Runs frontend + backend together
+</p>
+
+---
+
+
 
 ## ⚙️ Execution Commands
 
@@ -120,5 +238,8 @@ When contributing, ensure:
 
   
 
+## 💡 Built With
 
-Built with ❤️ to enforce clarity, transparency, and computational intelligence in the modern insurance domain. ❤️
+<p>
+Built with clarity, transparency, and AI-driven insurance intelligence.
+</p>
