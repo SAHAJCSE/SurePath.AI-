@@ -122,13 +122,17 @@ export interface ClaimCheckRequest {
   scenario: string;
   policy?: any; // ParsedPolicy 
   provider?: string;
+  analystInstructions?: string;
 }
 
 export interface ClaimCheckResult {
-  claim_status: 'approved' | 'partial' | 'rejected';
-  approval_chance: number;
-  risk_level: 'low' | 'medium' | 'high';
+  status: 'APPROVED' | 'REJECTED' | 'UNCERTAIN';
+  approvalChance: number;
+  riskLevel: 'Low' | 'Medium' | 'High';
   reason: string;
+  detailedAnalysis: string;
+  keyFactors: string[];
+  userAdvice: string;
 };
 
 

@@ -40,57 +40,46 @@ export async function checkClaimApproval(opts: ClaimCheckRequest): Promise<Claim
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const SYSTEM_PROMPT = `You are an intelligent insurance claim evaluation assistant.
+  const SYSTEM_PROMPT = opts.analystInstructions?.trim() || `You are an expert health insurance claim analyst AI.
 
-Your job is to analyze whether a user's insurance claim is likely to be approved based on their situation and policy details.
+Your task is to evaluate whether a user's claim will be approved based on their described medical situation and the provided insurance policy.
 
----
+Think like a real insurance company reviewer - strict, realistic, and policy-driven.
 
 INPUT:
-* User scenario (illness/event description)
-* Policy JSON (coverage, exclusions, waiting periods, limits)
+- User's medical situation (free text)
+- Policy details (coverage, exclusions, waiting period, sum insured)
 
----
-
-OUTPUT FORMAT (STRICT JSON):
+OUTPUT (STRICT JSON FORMAT):
 {
-"claim_status": "approved | partial | rejected",
-"approval_chance": number (0-100),
-"risk_level": "low | medium | high",
-"reason": "simple explanation in plain English"
+  "status": "APPROVED | REJECTED | UNCERTAIN",
+  "approvalChance": number (0-100),
+  "riskLevel": "Low | Medium | High",
+  "reason": "Clear, simple explanation in 1-2 lines",
+  "detailedAnalysis": "Short paragraph explaining decision using policy terms",
+  "keyFactors": [
+    "Factor 1",
+    "Factor 2",
+    "Factor 3"
+  ],
+  "userAdvice": "What user should do next (e.g., documents, precautions)"
 }
 
----
+DECISION LOGIC:
+- Accidents -> HIGH approval chance unless explicitly excluded
+- Pre-existing diseases -> Check waiting period strictly
+- Recent policy (< waiting period) -> Increase rejection probability
+- Cosmetic / non-medical / excluded treatments -> REJECT
+- Missing or unclear info -> mark as UNCERTAIN (not APPROVED)
 
-RULES:
-* If waiting period applies → claim_status = rejected
-* If limits or caps apply → claim_status = partial
-* If fully covered → claim_status = approved
+TONE:
+- Simple, human-friendly
+- Avoid technical jargon unless needed
+- Be honest - do NOT overpromise approval
 
-* Approval chance logic:
-  approved → 80–100
-  partial → 40–79
-  rejected → 0–39
-
-* Risk level:
-  high → rejection likely
-  medium → partial risk
-  low → safe
-
-* DO NOT use technical jargon
-* DO NOT mention internal policy codes
-* Keep explanation under 2 lines
-* Focus on financial impact
-
----
-
-EXAMPLE OUTPUT:
-{
-"claim_status": "partial",
-"approval_chance": 65,
-"risk_level": "medium",
-"reason": "Room rent limit and non-covered items may reduce your claim payout."
-}`;
+IMPORTANT:
+- Output must ALWAYS be valid JSON
+- No extra text outside JSON`;
 
   const policyText = opts.policy
     ? JSON.stringify(opts.policy, null, 2).slice(0, 20000)
@@ -121,12 +110,15 @@ EXAMPLE OUTPUT:
     const response = await result.response;
     const parsed = safeJsonParse(response.text());
 
-    if (parsed && parsed.claim_status && typeof parsed.approval_chance === 'number') {
+    if (parsed?.status) {
       return {
-        claim_status: parsed.claim_status as 'approved' | 'partial' | 'rejected',
-        approval_chance: clamp01to100(parsed.approval_chance, 50),
-        risk_level: (parsed.risk_level as 'low' | 'medium' | 'high') || 'medium',
-        reason: String(parsed.reason || 'Analysis complete.')
+        status: parsed.status === 'APPROVED' || parsed.status === 'REJECTED' || parsed.status === 'UNCERTAIN' ? parsed.status : 'UNCERTAIN',
+        approvalChance: clamp01to100(parsed.approvalChance, 50),
+        riskLevel: parsed.riskLevel === 'Low' || parsed.riskLevel === 'High' ? parsed.riskLevel : 'Medium',
+        reason: String(parsed.reason || 'We could not validate all policy conditions.'),
+        detailedAnalysis: String(parsed.detailedAnalysis || 'Decision based on waiting periods, exclusions, and coverage limits in the policy.'),
+        keyFactors: Array.isArray(parsed.keyFactors) ? parsed.keyFactors.slice(0, 3).map((x: any) => String(x)) : ['Policy exclusions', 'Waiting period rules', 'Medical necessity and treatment type'],
+        userAdvice: String(parsed.userAdvice || 'Share complete hospital records and policy documents before claim filing.')
       };
     }
   } catch (error) {
@@ -138,49 +130,52 @@ EXAMPLE OUTPUT:
 }
 
 function getDemoClaimResult(scenario: string, locale: Locale): ClaimCheckResult {
-  const hi = locale === 'hi';
   const lower = scenario.toLowerCase();
 
   if (lower.includes('diabetes') || lower.includes('first year') || lower.includes('pre-existing') || lower.includes('PED')) {
     return {
-      claim_status: 'rejected',
-      approval_chance: 10,
-      risk_level: 'high',
-      reason: hi
-        ? 'Prati raksha avadhi poori nahi hui hai (24-48 mahine).'
-        : 'Waiting period not completed (typically 24-48 months).'
+      status: 'REJECTED',
+      approvalChance: 10,
+      riskLevel: 'High',
+      reason: 'Pre-existing condition is likely inside waiting period.',
+      detailedAnalysis: 'Most health policies apply a strict waiting period for pre-existing diseases. If policy age is below that period, claim rejection is highly likely.',
+      keyFactors: ['Pre-existing disease', 'Waiting period not completed', 'Policy age check required'],
+      userAdvice: 'Submit policy schedule and prior medical records to verify waiting period completion.'
     };
   }
 
   if (lower.includes('accident') || lower.includes('injury')) {
     return {
-      claim_status: 'approved',
-      approval_chance: 95,
-      risk_level: 'low',
-      reason: hi
-        ? 'Durghatna puri tarah se cover hai, koi waiting period nahi.'
-        : 'Accidental injuries fully covered, no waiting period.'
+      status: 'APPROVED',
+      approvalChance: 95,
+      riskLevel: 'Low',
+      reason: 'Accident-related hospitalization is usually covered without waiting period.',
+      detailedAnalysis: 'Accidental treatment is generally eligible immediately unless a specific accident-related exclusion applies in the policy wording.',
+      keyFactors: ['Accidental event', 'No waiting period for accidents', 'No explicit exclusion identified'],
+      userAdvice: 'Keep FIR/incident report, admission notes, and itemized bills ready for faster processing.'
     };
   }
 
   if (lower.includes('surgery') || lower.includes('icu') || lower.includes('hospital')) {
     return {
-      claim_status: 'partial',
-      approval_chance: 65,
-      risk_level: 'medium',
-      reason: hi
-        ? 'Kamre ka kiraya limit aur upbhokta vastu na cover hone se payout kam ho sakta hai.'
-        : 'Room rent limits and non-covered consumables may reduce payout.'
+      status: 'UNCERTAIN',
+      approvalChance: 65,
+      riskLevel: 'Medium',
+      reason: 'Hospital claim may be paid partly based on sub-limits and exclusions.',
+      detailedAnalysis: 'Even when hospitalization is covered, room rent caps, consumables exclusion, and eligibility checks can reduce settlement amount.',
+      keyFactors: ['Hospitalization coverage scope', 'Room rent/sub-limit caps', 'Consumables/exclusions'],
+      userAdvice: 'Get a pre-authorization estimate and keep itemized bills and discharge summary.'
     };
   }
 
   return {
-    claim_status: 'partial',
-    approval_chance: 70,
-    risk_level: 'medium',
-    reason: hi
-      ? 'Limiton ke andar cover hai. Room rent aur exclusions check karein.'
-      : 'Covered within limits. Check room rent caps and exclusions.'
+    status: 'UNCERTAIN',
+    approvalChance: 55,
+    riskLevel: 'Medium',
+    reason: 'Outcome depends on treatment type, exclusions, and waiting period status.',
+    detailedAnalysis: 'Without complete diagnosis timeline and policy clauses, insurer may approve, partially settle, or reject based on exclusions and sub-limits.',
+    keyFactors: ['Medical necessity clarity', 'Exclusion applicability', 'Waiting period and sum insured limits'],
+    userAdvice: 'Share discharge summary, diagnosis date, and full policy wording before filing.'
   };
 }
 
@@ -196,41 +191,46 @@ export async function checkClaimApproval(opts: ClaimCheckRequest): Promise<Claim
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const SYSTEM_PROMPT = \`You are an intelligent insurance claim evaluation assistant.
+  const SYSTEM_PROMPT = opts.analystInstructions?.trim() || \`You are an expert health insurance claim analyst AI.
 
-Your job is to analyze whether a user's insurance claim is likely to be approved based on their situation and policy details.
+Your task is to evaluate whether a user's claim will be approved based on their described medical situation and the provided insurance policy.
 
----
+Think like a real insurance company reviewer - strict, realistic, and policy-driven.
 
 INPUT:
-* User scenario (illness/event description)
-* Policy JSON (coverage, exclusions, waiting periods, limits)
+- User's medical situation (free text)
+- Policy details (coverage, exclusions, waiting period, sum insured)
 
----
-
-OUTPUT FORMAT (STRICT JSON):
+OUTPUT (STRICT JSON FORMAT):
 {
-"claim_status": "approved | partial | rejected",
-"approval_chance": number (0-100),
-"risk_level": "low | medium | high",
-"reason": "simple explanation in plain English"
+  "status": "APPROVED | REJECTED | UNCERTAIN",
+  "approvalChance": number (0-100),
+  "riskLevel": "Low | Medium | High",
+  "reason": "Clear, simple explanation in 1-2 lines",
+  "detailedAnalysis": "Short paragraph explaining decision using policy terms",
+  "keyFactors": [
+    "Factor 1",
+    "Factor 2",
+    "Factor 3"
+  ],
+  "userAdvice": "What user should do next (e.g., documents, precautions)"
 }
 
----
+DECISION LOGIC:
+- Accidents -> HIGH approval chance unless explicitly excluded
+- Pre-existing diseases -> Check waiting period strictly
+- Recent policy (< waiting period) -> Increase rejection probability
+- Cosmetic / non-medical / excluded treatments -> REJECT
+- Missing or unclear info -> mark as UNCERTAIN (not APPROVED)
 
-RULES:
-* If waiting period applies → claim_status = rejected
-* If limits or caps apply → claim_status = partial
-* If fully covered → claim_status = approved
-* Approval chance logic: approved → 80–100, partial → 40–79, rejected → 0–39
-* Risk level: high → rejection likely, medium → partial risk, low → safe
-* DO NOT use technical jargon
-* DO NOT mention internal policy codes
-* Keep explanation under 2 lines
-* Focus on financial impact
+TONE:
+- Simple, human-friendly
+- Avoid technical jargon unless needed
+- Be honest - do NOT overpromise approval
 
-EXAMPLE:
-{"claim_status": "partial","approval_chance": 65,"risk_level": "medium","reason": "Room rent limit and non-covered consumables may reduce your claim."}\`;
+IMPORTANT:
+- Output must ALWAYS be valid JSON
+- No extra text outside JSON\`;
 
   const policyText = opts.policy ? JSON.stringify(opts.policy, null, 2).slice(0, 20000) : 'No policy';
 
@@ -243,12 +243,15 @@ EXAMPLE:
     });
 
     const parsed = safeJsonParse(result.response.text());
-    if (parsed?.claim_status) {
+    if (parsed?.status) {
       return {
-        claim_status: parsed.claim_status,
-        approval_chance: clamp01to100(parsed.approval_chance, 50),
-        risk_level: parsed.risk_level || 'medium',
-        reason: String(parsed.reason || '')
+        status: parsed.status === 'APPROVED' || parsed.status === 'REJECTED' || parsed.status === 'UNCERTAIN' ? parsed.status : 'UNCERTAIN',
+        approvalChance: clamp01to100(parsed.approvalChance, 50),
+        riskLevel: parsed.riskLevel === 'Low' || parsed.riskLevel === 'High' ? parsed.riskLevel : 'Medium',
+        reason: String(parsed.reason || 'We could not validate all policy conditions.'),
+        detailedAnalysis: String(parsed.detailedAnalysis || 'Decision based on waiting periods, exclusions, and coverage limits in the policy.'),
+        keyFactors: Array.isArray(parsed.keyFactors) ? parsed.keyFactors.slice(0, 3).map((x: any) => String(x)) : ['Policy exclusions', 'Waiting period rules', 'Medical necessity and treatment type'],
+        userAdvice: String(parsed.userAdvice || 'Share complete hospital records and policy documents before claim filing.')
       };
     }
   } catch (e) {
@@ -261,12 +264,36 @@ EXAMPLE:
 function getDemoClaimResult(scenario: string, locale: Locale): ClaimCheckResult {
   const lower = scenario.toLowerCase();
   if (lower.includes('diabetes') || lower.includes('first year') || lower.includes('pre-existing')) {
-    return { claim_status: 'rejected', approval_chance: 10, risk_level: 'high', reason: 'Waiting period not completed for pre-existing conditions.' };
+    return {
+      status: 'REJECTED',
+      approvalChance: 10,
+      riskLevel: 'High',
+      reason: 'Pre-existing condition is likely inside waiting period.',
+      detailedAnalysis: 'Most health policies apply a strict waiting period for pre-existing diseases. If policy age is below that period, claim rejection is highly likely.',
+      keyFactors: ['Pre-existing disease', 'Waiting period not completed', 'Policy age check required'],
+      userAdvice: 'Submit policy schedule and prior medical records to verify waiting period completion.'
+    };
   }
   if (lower.includes('accident')) {
-    return { claim_status: 'approved', approval_chance: 95, risk_level: 'low', reason: 'Accidental injuries fully covered - no waiting period.' };
+    return {
+      status: 'APPROVED',
+      approvalChance: 95,
+      riskLevel: 'Low',
+      reason: 'Accident-related hospitalization is usually covered without waiting period.',
+      detailedAnalysis: 'Accidental treatment is generally eligible immediately unless a specific accident-related exclusion applies in the policy wording.',
+      keyFactors: ['Accidental event', 'No waiting period for accidents', 'No explicit exclusion identified'],
+      userAdvice: 'Keep FIR/incident report, admission notes, and itemized bills ready for faster processing.'
+    };
   }
-  return { claim_status: 'partial', approval_chance: 65, risk_level: 'medium', reason: 'Covered within room rent limits. Check policy caps.' };
+  return {
+    status: 'UNCERTAIN',
+    approvalChance: 55,
+    riskLevel: 'Medium',
+    reason: 'Outcome depends on treatment type, exclusions, and waiting period status.',
+    detailedAnalysis: 'Without complete diagnosis timeline and policy clauses, insurer may approve, partially settle, or reject based on exclusions and sub-limits.',
+    keyFactors: ['Medical necessity clarity', 'Exclusion applicability', 'Waiting period and sum insured limits'],
+    userAdvice: 'Share discharge summary, diagnosis date, and full policy wording before filing.'
+  };
 }
 
 // Existing exports

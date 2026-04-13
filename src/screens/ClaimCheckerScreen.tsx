@@ -14,6 +14,93 @@ interface ClaimResult {
     reason: string;
 }
 
+interface StrictClaimResult {
+    status: 'APPROVED' | 'REJECTED' | 'UNCERTAIN';
+    approvalChance: number;
+    riskLevel: 'Low' | 'Medium' | 'High';
+    reason: string;
+    detailedAnalysis?: string;
+    keyFactors?: string[];
+    userAdvice?: string;
+}
+
+const CLAIM_ANALYST_INSTRUCTIONS = `You are an expert health insurance claim analyst AI.
+
+Your task is to evaluate whether a user's claim will be approved based on their described medical situation and the provided insurance policy.
+
+Think like a real insurance company reviewer — strict, realistic, and policy-driven.
+
+INPUT:
+- User's medical situation (free text)
+- Policy details (coverage, exclusions, waiting period, sum insured)
+
+OUTPUT (STRICT JSON FORMAT):
+{
+  "status": "APPROVED | REJECTED | UNCERTAIN",
+  "approvalChance": number (0-100),
+  "riskLevel": "Low | Medium | High",
+  "reason": "Clear, simple explanation in 1–2 lines",
+  "detailedAnalysis": "Short paragraph explaining decision using policy terms",
+  "keyFactors": [
+    "Factor 1",
+    "Factor 2",
+    "Factor 3"
+  ],
+  "userAdvice": "What user should do next (e.g., documents, precautions)"
+}
+
+DECISION LOGIC:
+- Accidents -> HIGH approval chance unless explicitly excluded
+- Pre-existing diseases -> Check waiting period strictly
+- Recent policy (< waiting period) -> Increase rejection probability
+- Cosmetic / non-medical / excluded treatments -> REJECT
+- Missing or unclear info -> mark as UNCERTAIN (not APPROVED)
+
+TONE:
+- Simple, human-friendly (like explaining to a normal user)
+- Avoid technical jargon unless needed
+- Be honest — do NOT overpromise approval
+
+IMPORTANT:
+- Output must ALWAYS be valid JSON
+- No extra text outside JSON`;
+
+function isLegacyResult(data: any): data is ClaimResult {
+    return Boolean(data?.claim_status && typeof data?.approval_chance !== 'undefined');
+}
+
+function isStrictResult(data: any): data is StrictClaimResult {
+    return Boolean(data?.status && typeof data?.approvalChance !== 'undefined');
+}
+
+function normalizeClaimResult(data: any): ClaimResult | null {
+    if (isLegacyResult(data)) {
+        return {
+            claim_status: data.claim_status,
+            approval_chance: Number(data.approval_chance) || 0,
+            risk_level: data.risk_level,
+            reason: String(data.reason || 'Analysis complete.')
+        };
+    }
+
+    if (isStrictResult(data)) {
+        const mappedStatus: ClaimResult['claim_status'] =
+            data.status === 'APPROVED' ? 'approved' : data.status === 'REJECTED' ? 'rejected' : 'partial';
+
+        const mappedRisk: ClaimResult['risk_level'] =
+            data.riskLevel === 'Low' ? 'low' : data.riskLevel === 'High' ? 'high' : 'medium';
+
+        return {
+            claim_status: mappedStatus,
+            approval_chance: Math.max(0, Math.min(100, Math.round(Number(data.approvalChance) || 0))),
+            risk_level: mappedRisk,
+            reason: String(data.reason || 'Analysis complete.')
+        };
+    }
+
+    return null;
+}
+
 export const ClaimCheckerScreen = () => {
     const { policy, loading: policyLoading } = usePolicy();
     const [scenario, setScenario] = useState('Major Surgery');
@@ -47,7 +134,8 @@ export const ClaimCheckerScreen = () => {
                     policyId,
                     scenario,
                     policy: policy,
-                    provider
+                    provider,
+                    analystInstructions: CLAIM_ANALYST_INSTRUCTIONS
                 }),
             });
 
@@ -57,7 +145,12 @@ export const ClaimCheckerScreen = () => {
 
             const data = await response.json();
             if (data.result) {
-                setResult(data.result);
+                const normalizedResult = normalizeClaimResult(data.result);
+                if (normalizedResult) {
+                    setResult(normalizedResult);
+                } else {
+                    setResult(demoResult(scenario, policy));
+                }
             } else {
                 setResult(demoResult(scenario, policy));
             }
