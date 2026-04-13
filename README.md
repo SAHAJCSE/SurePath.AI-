@@ -33,6 +33,7 @@
 <p>
   <a href="https://sure-path-ai10x.vercel.app/">
     👉 View Live Demo
+    for Better UX open in mobile
   </a>
 </p>
 
