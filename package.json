@@ -21,6 +21,7 @@
     "express": "^4.22.1",
     "framer-motion": "^11.11.7",
     "lucide-react": "^0.546.0",
+    "motion": "^12.38.0",
     "multer": "^2.0.2",
     "openai": "^6.34.0",
     "pdf-parse": "^1.1.1",
