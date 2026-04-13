@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { Screen } from './types/index';
 import { Header } from './components/layout/Header';
@@ -14,6 +14,7 @@ import { ProviderSelection } from './screens/ProviderSelection';
 import { PolicyVerification } from './screens/PolicyVerification';
 import { AssistantScreen } from './screens/AssistantScreen';
 import { ProfileFormScreen } from './screens/ProfileFormScreen';
+import { ClaimCheckerScreen } from './screens/ClaimCheckerScreen';
 import { TranslationConsent } from './components/layout/TranslationConsent';
 
 // --- Components ---
@@ -44,7 +45,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(() => {
     return (localStorage.getItem('surepath_active_screen') as Screen) || 'home';
   });
-  
+
   const handleSetScreen = (newScreen: Screen) => {
     setScreen(newScreen);
     localStorage.setItem('surepath_active_screen', newScreen);
@@ -60,7 +61,7 @@ export default function App() {
     setLocale(targetLocale);
     localStorage.setItem('surepath_locale', targetLocale);
     document.documentElement.lang = targetLocale;
-    
+
     // Trigger actual Google Translate dropdown
     const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (select) {
@@ -71,10 +72,10 @@ export default function App() {
 
   const toggleLanguage = () => {
     const next = locale === 'en' ? 'hi' : 'en';
-    
+
     // Check for explicit consent if switching to Hindi
     const hasConsent = localStorage.getItem('surepath_translation_consent') === 'true';
-    
+
     if (next === 'hi' && !hasConsent) {
       setShowConsent(true);
     } else {
@@ -91,7 +92,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
       <Header locale={locale} toggleLanguage={toggleLanguage} />
-      
+
       <AnimatePresence mode="wait">
         {screen === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -130,8 +131,8 @@ export default function App() {
         )}
         {screen === 'profile' && (
           <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <ProfileScreen 
-              onEdit={() => handleSetScreen('profile_form')} 
+            <ProfileScreen
+              onEdit={() => handleSetScreen('profile_form')}
               onHelp={() => handleSetScreen('assistant')}
             />
           </motion.div>
@@ -144,6 +145,11 @@ export default function App() {
         {screen === 'assistant' && (
           <motion.div key="assistant" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <AssistantScreen provider={selectedProvider} locale={locale} />
+          </motion.div>
+        )}
+        {screen === 'claim-checker' && (
+          <motion.div key="claim-checker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ClaimCheckerScreen />
           </motion.div>
         )}
       </AnimatePresence>
@@ -168,9 +174,9 @@ export default function App() {
 
       <AnimatePresence>
         {showConsent && (
-          <TranslationConsent 
-            onAccept={handleGrantConsent} 
-            onCancel={() => setShowConsent(false)} 
+          <TranslationConsent
+            onAccept={handleGrantConsent}
+            onCancel={() => setShowConsent(false)}
           />
         )}
       </AnimatePresence>
