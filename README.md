@@ -23,42 +23,8 @@
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 ---
 
-**[View Live Application Environment](https://sure-path-ai10x.vercel.app/)**
-
-🚨 Problem Statement
-
-Insurance policies are complex and filled with dense legal language. Most users cannot clearly understand coverage, exclusions, or limits—leading to confusion and unexpected expenses during claims.
 
 
-<p>
-  <a href="https://opensource.org/licenses/MIT">License: MIT</a> |
-  <a href="https://reactjs.org/">Frontend</a> |
-  <a href="https://nodejs.org/">Backend</a> |
-  <a href="https://ai.google.dev/">AI Engine</a> |
-  <a href="https://vitejs.dev/">Build</a>
-</p>
-
-
-
-## 🌐 Live Application
-<p>
-  <a href="https://sure-path-ai10x.vercel.app/">
-    👉 View Live Demo
-  </a>
-</p>
-
----
-
-
-<p>
-  <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB"/>
-  <img src="https://img.shields.io/badge/Bundler-Vite-646CFF"/>
-  <img src="https://img.shields.io/badge/Styling-TailwindCSS-38B2AC"/>
-  <img src="https://img.shields.io/badge/Backend-Node.js-339933"/>
-  <img src="https://img.shields.io/badge/API-Express-black"/>
-  <img src="https://img.shields.io/badge/AI-Gemini%202.0-blue"/>
-  <img src="https://img.shields.io/badge/Status-Active-success"/>
-</p>
 
 ---
 
